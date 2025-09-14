@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.5</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.visor.schoolmanagement</groupId>
 	<artifactId>school-management-system</artifactId>
@@ -20,21 +20,28 @@
 	</properties>
 
     <modules>
-        <module>identity-service</module>
-        <module>academic-service</module>
-        <module>timetable-service</module>
-        <module>assessment-service</module>
-        <module>gradebook-service</module>
-        <module>notification-service</module>
-        <module>payment-service</module>
-        <module>reporting-service</module>
-        <module>cms-service</module>
-        <module>file-manager-service</module>
-        <module>search-service</module>
-        <module>config-server</module>
-        <module>discovery-server</module>
-        <module>gateway</module>
-        <module>common</module>
+        <!-- Shared Libraries -->
+        <module>shared/common</module>
+        
+        <!-- Infrastructure Services -->
+        <module>infrastructure/config-server</module>
+        <module>infrastructure/discovery-server</module>
+        <module>infrastructure/gateway</module>
+        
+        <!-- Business Services -->
+        <module>business-services/identity-service</module>
+        <module>business-services/academic-service</module>
+        <module>business-services/timetable-service</module>
+        <module>business-services/assessment-service</module>
+        <module>business-services/gradebook-service</module>
+        <module>business-services/payment-service</module>
+        
+        <!-- Platform Services -->
+        <module>platform-services/notification-service</module>
+        <module>platform-services/reporting-service</module>
+        <module>platform-services/cms-service</module>
+        <module>platform-services/file-manager-service</module>
+        <module>platform-services/search-service</module>
     </modules>
 
 	<dependencies>

@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  config-server:
+    build: ../../../infrastructure/config-server
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - CONFIG_SERVER_GIT_URI=${CONFIG_GIT_URI:-https://github.com/your-org/school-config.git}
+    networks:
+      - school-network
+
+  discovery-server:
+    build: ../../../infrastructure/discovery-server
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+    depends_on:
+      - config-server
+    networks:
+      - school-network
+
+  gateway:
+    build: ../../../infrastructure/gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+    depends_on:
+      - config-server
+      - discovery-server
+    networks:
+      - school-network
+
+  # Business Services
+  identity-service:
+    build: ../../../business-services/identity-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - DB_HOST=postgres-identity
+    depends_on:
+      - config-server
+      - discovery-server
+      - postgres-identity
+    networks:
+      - school-network
+
+  academic-service:
+    build: ../../../business-services/academic-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - DB_HOST=postgres-academic
+    depends_on:
+      - config-server
+      - discovery-server
+      - postgres-academic
+    networks:
+      - school-network
+
+  # Platform Services
+  notification-service:
+    build: ../../../platform-services/notification-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - REDIS_HOST=redis
+    depends_on:
+      - config-server
+      - discovery-server
+      - redis
+    networks:
+      - school-network
+
+  # Databases
+  postgres-identity:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: identity_dev
+      POSTGRES_USER: identity_user
+      POSTGRES_PASSWORD: dev_password
+    volumes:
+      - postgres_identity_data:/var/lib/postgresql/data
+    networks:
+      - school-network
+
+  postgres-academic:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: academic_dev
+      POSTGRES_USER: academic_user
+      POSTGRES_PASSWORD: dev_password
+    volumes:
+      - postgres_academic_data:/var/lib/postgresql/data
+    networks:
+      - school-network
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - school-network
+
+networks:
+  school-network:
+    driver: bridge
+
+volumes:
+  postgres_identity_data:
+  postgres_academic_data:

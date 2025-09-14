@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: school-management-prod
+  labels:
+    name: school-management-prod
+    environment: production
+    project: school-management-system
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: school-management-prod-quota
+  namespace: school-management-prod
+spec:
+  hard:
+    requests.cpu: "16"
+    requests.memory: 32Gi
+    limits.cpu: "32"
+    limits.memory: 64Gi
+    persistentvolumeclaims: "20"
+    services: "30"
+    secrets: "20"
+    configmaps: "20"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: school-management-prod-limits
+  namespace: school-management-prod
+spec:
+  limits:
+  - default:
+      cpu: 1000m
+      memory: 1Gi
+    defaultRequest:
+      cpu: 200m
+      memory: 256Mi
+    type: Container
