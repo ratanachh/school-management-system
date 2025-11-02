@@ -24,6 +24,12 @@
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
 
+        <!-- Spring Boot WebFlux (required for Gateway) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
         <!-- Spring Cloud Netflix Eureka Client -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
