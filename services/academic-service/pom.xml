@@ -23,6 +23,13 @@
     </properties>
 
     <dependencies>
+        <!-- Common Library -->
+        <dependency>
+            <groupId>com.visor.school</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
