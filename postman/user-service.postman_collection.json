@@ -1,0 +1,509 @@
+{
+	"info": {
+		"_postman_id": "user-service-collection",
+		"name": "User Service API",
+		"description": "API collection for User Service - Authentication, User Management, Parents, and Permissions",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"STUDENT\",\n  \"password\": \"SecurePassword123!\",\n  \"phoneNumber\": \"+855123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Verify Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"verification-token-from-email\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/verify-email",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "verify-email"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Request Password Reset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/reset-password",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "reset-password"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{userId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"+855123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{userId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Account Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/:id/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", ":id", "status"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{userId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/search?email=&role=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "search"],
+							"query": [
+								{
+									"key": "email",
+									"value": ""
+								},
+								{
+									"key": "role",
+									"value": ""
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Parents",
+			"item": [
+				{
+					"name": "Link Student to Parent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"relationship\": \"FATHER\",\n  \"isPrimary\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parents/:userId/students/:studentId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parents", ":userId", "students", ":studentId"],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{parentUserId}}"
+								},
+								{
+									"key": "studentId",
+									"value": "{{studentId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Children by Parent",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parents/:parentId/students",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parents", ":parentId", "students"],
+							"variable": [
+								{
+									"key": "parentId",
+									"value": "{{parentUserId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Unlink Student from Parent",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/parents/:userId/students/:studentId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "parents", ":userId", "students", ":studentId"],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{parentUserId}}"
+								},
+								{
+									"key": "studentId",
+									"value": "{{studentId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Permissions",
+			"item": [
+				{
+					"name": "Create Permission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"permissionKey\": \"VIEW_ALL_STUDENTS\",\n  \"name\": \"View All Students\",\n  \"description\": \"Permission to view all students in the system\",\n  \"category\": \"STUDENT_MANAGEMENT\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/permissions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "permissions"]
+						}
+					}
+				},
+				{
+					"name": "Get All Permissions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/permissions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "permissions"]
+						}
+					}
+				},
+				{
+					"name": "Get Permission by Key",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/permissions/:permissionKey",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "permissions", ":permissionKey"],
+							"variable": [
+								{
+									"key": "permissionKey",
+									"value": "VIEW_ALL_STUDENTS"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Permissions by Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/permissions/category/:category",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "permissions", "category", ":category"],
+							"variable": [
+								{
+									"key": "category",
+									"value": "STUDENT_MANAGEMENT"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Assign Permission to User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/permissions/:permissionId/assign/:userId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "permissions", ":permissionId", "assign", ":userId"],
+							"variable": [
+								{
+									"key": "permissionId",
+									"value": "{{permissionId}}"
+								},
+								{
+									"key": "userId",
+									"value": "{{userId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Permissions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/permissions/user/:userId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "permissions", "user", ":userId"],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{userId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Remove Permission from User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/permissions/:permissionId/user/:userId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "permissions", ":permissionId", "user", ":userId"],
+							"variable": [
+								{
+									"key": "permissionId",
+									"value": "{{permissionId}}"
+								},
+								{
+									"key": "userId",
+									"value": "{{userId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "parentUserId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "permissionId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+

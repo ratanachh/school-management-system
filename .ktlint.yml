@@ -1,0 +1,25 @@
+# Ktlint configuration for School Management System
+# Kotlin code formatting rules
+
+version: 1.0.0
+editorconfigOverride: true
+
+# Code style
+code_style: official
+
+# Experimental rules
+experimental:
+  - no-empty-class-body
+  - no-empty-file
+
+# Disabled rules
+disabled_rules:
+  - import-ordering
+
+# Reporter
+reporter: checkstyle
+output: build/reports/ktlint/ktlint-checkstyle-report.xml
+
+# Additional rules
+editorConfigOverride: true
+

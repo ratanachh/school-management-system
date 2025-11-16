@@ -1,0 +1,376 @@
+{
+	"info": {
+		"_postman_id": "attendance-service-collection",
+		"name": "Attendance Service API",
+		"description": "API collection for Attendance Service - Attendance Marking, Sessions, and Reports",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Attendance",
+			"item": [
+				{
+					"name": "Mark Attendance",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"classId\": \"{{classId}}\",\n  \"date\": \"2024-01-15\",\n  \"status\": \"PRESENT\",\n  \"markedBy\": \"{{teacherId}}\",\n  \"notes\": \"On time\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance"]
+						}
+					}
+				},
+				{
+					"name": "Get Attendance by Class",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/class/:classId?date=2024-01-15",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "class", ":classId"],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-01-15",
+									"description": "Optional date filter (ISO format)"
+								}
+							],
+							"variable": [
+								{
+									"key": "classId",
+									"value": "{{classId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Attendance by Student",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/student/:studentId?classId=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "student", ":studentId"],
+							"query": [
+								{
+									"key": "classId",
+									"value": "",
+									"description": "Optional class filter"
+								}
+							],
+							"variable": [
+								{
+									"key": "studentId",
+									"value": "{{studentId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Attendance Sessions",
+			"item": [
+				{
+					"name": "Create Attendance Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"classId\": \"{{classId}}\",\n  \"date\": \"2024-01-15\",\n  \"createdBy\": \"{{teacherId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/sessions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "sessions"]
+						}
+					}
+				},
+				{
+					"name": "Delegate Session to Class Leader",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"classId\": \"{{classId}}\",\n  \"classLeaderId\": \"{{studentId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/sessions/:sessionId/delegate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "sessions", ":sessionId", "delegate"],
+							"variable": [
+								{
+									"key": "sessionId",
+									"value": "{{sessionId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Collect Attendance by Class Leader",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"classLeaderId\": \"{{studentId}}\",\n  \"attendanceEntries\": [\n    {\n      \"studentId\": \"{{studentId}}\",\n      \"status\": \"PRESENT\",\n      \"notes\": \"On time\"\n    },\n    {\n      \"studentId\": \"{{studentId2}}\",\n      \"status\": \"ABSENT\",\n      \"notes\": \"Sick\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/sessions/:sessionId/collect",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "sessions", ":sessionId", "collect"],
+							"variable": [
+								{
+									"key": "sessionId",
+									"value": "{{sessionId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Approve Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"teacherId\": \"{{teacherId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/sessions/:sessionId/approve",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "sessions", ":sessionId", "approve"],
+							"variable": [
+								{
+									"key": "sessionId",
+									"value": "{{sessionId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Reject Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"teacherId\": \"{{teacherId}}\",\n  \"reason\": \"Incomplete attendance data\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/sessions/:sessionId/reject",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "sessions", ":sessionId", "reject"],
+							"variable": [
+								{
+									"key": "sessionId",
+									"value": "{{sessionId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Session by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/sessions/:sessionId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "sessions", ":sessionId"],
+							"variable": [
+								{
+									"key": "sessionId",
+									"value": "{{sessionId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Sessions by Class",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/attendance/sessions/class/:classId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "attendance", "sessions", "class", ":classId"],
+							"variable": [
+								{
+									"key": "classId",
+									"value": "{{classId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "Generate Class Attendance Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/reports/class/:classId?startDate=2024-01-01&endDate=2024-01-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "reports", "class", ":classId"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-01-31"
+								}
+							],
+							"variable": [
+								{
+									"key": "classId",
+									"value": "{{classId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "studentId2",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "classId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "teacherId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "sessionId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+

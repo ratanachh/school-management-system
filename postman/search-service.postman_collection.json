@@ -1,0 +1,111 @@
+{
+	"info": {
+		"_postman_id": "search-service-collection",
+		"name": "Search Service API",
+		"description": "API collection for Search Service - Search functionality for Students, Teachers, and Classes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search Students",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/search?q=John&type=students",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "John",
+									"description": "Search query"
+								},
+								{
+									"key": "type",
+									"value": "students",
+									"description": "Search type: students, teachers, or classes"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Teachers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/search?q=Smith&type=teachers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "Smith"
+								},
+								{
+									"key": "type",
+									"value": "teachers"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Classes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/search?q=Grade 5&type=classes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "Grade 5"
+								},
+								{
+									"key": "type",
+									"value": "classes"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+
