@@ -138,6 +138,13 @@
                 <configuration>
                     <mainClass>com.visor.school.attendanceservice.AttendanceServiceApplicationKt</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
