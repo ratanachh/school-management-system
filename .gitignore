@@ -66,3 +66,6 @@ test-results/
 *.temp
 *.cache
 
+.cursor
+.speckit
+
