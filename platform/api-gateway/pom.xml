@@ -118,6 +118,13 @@
                 <configuration>
                     <mainClass>com.visor.school.gateway.ApiGatewayApplicationKt</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

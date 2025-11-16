@@ -175,6 +175,13 @@
                 <configuration>
                     <mainClass>com.visor.school.userservice.UserServiceApplicationKt</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <dependencies>
                     <dependency>
                         <groupId>org.jetbrains.kotlin</groupId>

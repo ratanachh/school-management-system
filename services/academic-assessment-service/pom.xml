@@ -158,6 +158,13 @@
                 <configuration>
                     <mainClass>com.visor.school.academic.assessment.service.AcademicAssessmentServiceApplicationKt</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
