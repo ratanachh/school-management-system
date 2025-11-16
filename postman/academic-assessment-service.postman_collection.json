@@ -1,0 +1,376 @@
+{
+	"info": {
+		"_postman_id": "academic-assessment-service-collection",
+		"name": "Academic Assessment Service API",
+		"description": "API collection for Academic Assessment Service - Assessments, Grades, Gradebooks, and Report Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Assessments",
+			"item": [
+				{
+					"name": "Create Assessment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"classId\": \"{{classId}}\",\n  \"name\": \"Midterm Exam\",\n  \"type\": \"EXAM\",\n  \"totalPoints\": 100,\n  \"description\": \"Midterm examination covering chapters 1-5\",\n  \"weight\": 30,\n  \"dueDate\": \"2024-03-15\",\n  \"createdBy\": \"{{teacherId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assessments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "assessments"]
+						}
+					}
+				},
+				{
+					"name": "Get Assessment by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assessments/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "assessments", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{assessmentId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Assessments by Class",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assessments/class/:classId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "assessments", "class", ":classId"],
+							"variable": [
+								{
+									"key": "classId",
+									"value": "{{classId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Publish Assessment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assessments/:id/publish",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "assessments", ":id", "publish"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{assessmentId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Grades",
+			"item": [
+				{
+					"name": "Record Grade",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"assessmentId\": \"{{assessmentId}}\",\n  \"score\": 85,\n  \"notes\": \"Good performance\",\n  \"recordedBy\": \"{{teacherId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/grades",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "grades"]
+						}
+					}
+				},
+				{
+					"name": "Update Grade",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"assessmentId\": \"{{assessmentId}}\",\n  \"newScore\": 90,\n  \"notes\": \"Updated after review\",\n  \"updatedBy\": \"{{teacherId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/grades",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "grades"]
+						}
+					}
+				},
+				{
+					"name": "Get Grades by Student",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/grades/student/:studentId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "grades", "student", ":studentId"],
+							"variable": [
+								{
+									"key": "studentId",
+									"value": "{{studentId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Grades by Assessment",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/grades/assessment/:assessmentId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "grades", "assessment", ":assessmentId"],
+							"variable": [
+								{
+									"key": "assessmentId",
+									"value": "{{assessmentId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Gradebooks",
+			"item": [
+				{
+					"name": "Get Class Gradebook",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/gradebooks/class/:classId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "gradebooks", "class", ":classId"],
+							"variable": [
+								{
+									"key": "classId",
+									"value": "{{classId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Student Gradebook",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/gradebooks/student/:studentId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "gradebooks", "student", ":studentId"],
+							"variable": [
+								{
+									"key": "studentId",
+									"value": "{{studentId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Report Collection",
+			"item": [
+				{
+					"name": "Collect Exam Results",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "{{teacherId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/classes/:classId/exam-results?academicYear=2024-2025&term=FIRST",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "classes", ":classId", "exam-results"],
+							"query": [
+								{
+									"key": "academicYear",
+									"value": "2024-2025"
+								},
+								{
+									"key": "term",
+									"value": "FIRST"
+								}
+							],
+							"variable": [
+								{
+									"key": "classId",
+									"value": "{{classId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Submit Report",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "{{teacherId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"collectionId\": \"{{collectionId}}\",\n  \"additionalData\": {\n    \"notes\": \"All exam results collected and verified\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/classes/:classId/reports/submit",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "classes", ":classId", "reports", "submit"],
+							"variable": [
+								{
+									"key": "classId",
+									"value": "{{classId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "classId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "teacherId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "assessmentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "collectionId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+

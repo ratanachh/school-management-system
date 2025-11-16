@@ -1,0 +1,100 @@
+spring:
+  application:
+    name: user-service
+  config:
+    import: optional:configserver:http://localhost:8888
+
+keycloak:
+  initializer:
+    enabled: ${KEYCLOAK_INITIALIZER_ENABLED:true}
+    admin:
+      url: ${KEYCLOAK_URL:http://localhost:8070}
+      username: ${KEYCLOAK_ADMIN:admin}
+      password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+      client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}
+    realm:
+      name: ${KEYCLOAK_REALM:school-management}
+      enabled: true
+      attributes:
+        sso.system.initialized: "true"
+    clients:
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        protocol: openid-connect
+        public-client: false
+        service-accounts-enabled: true
+        redirect-uris:
+          - http://localhost:8080/*
+          - https://api.schoolmanagement.edu/*
+        web-origins:
+          - "+"
+        attributes:
+          access-token-lifespan: "300"
+          client-session-idle-timeout: "1800"
+          client-session-max-lifespan: "36000"
+    realm-roles:
+      - name: SUPER_ADMIN
+        description: Super administrator with full system access including administrator management
+      - name: ADMINISTRATOR
+        description: System administrator with full access
+      - name: TEACHER
+        description: Teacher with class and grade management permissions
+      - name: STUDENT
+        description: Student with read access to own records
+      - name: PARENT
+        description: Parent with access to children's records
+    client-roles:
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        name: COLLECT_ATTENDANCE
+        description: Permission to collect attendance as class leader
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        name: MANAGE_ATTENDANCE
+        description: Permission to manage attendance records
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        name: COLLECT_EXAM_RESULTS
+        description: Permission to collect exam results (class teachers grades 7-12)
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        name: SUBMIT_REPORTS
+        description: Permission to submit reports to school administration
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        name: VIEW_ALL_STUDENTS
+        description: Permission to view all student records
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        name: MANAGE_GRADES
+        description: Permission to record and modify grades
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        name: MANAGE_HOMEROOM
+        description: Permission to manage homeroom class (grades 1-6)
+      - client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        name: MANAGE_ADMINISTRATORS
+        description: Permission to create, update, and manage administrator accounts
+    composites:
+      - realm-role: SUPER_ADMIN
+        client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        client-roles:
+          - COLLECT_ATTENDANCE
+          - MANAGE_ATTENDANCE
+          - COLLECT_EXAM_RESULTS
+          - SUBMIT_REPORTS
+          - VIEW_ALL_STUDENTS
+          - MANAGE_GRADES
+          - MANAGE_HOMEROOM
+          - MANAGE_ADMINISTRATORS
+      - realm-role: ADMINISTRATOR
+        client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        client-roles:
+          - COLLECT_ATTENDANCE
+          - MANAGE_ATTENDANCE
+          - COLLECT_EXAM_RESULTS
+          - SUBMIT_REPORTS
+          - VIEW_ALL_STUDENTS
+          - MANAGE_GRADES
+          - MANAGE_HOMEROOM
+      - realm-role: TEACHER
+        client-id: ${KEYCLOAK_CLIENT_ID:school-management-client}
+        client-roles:
+          - MANAGE_ATTENDANCE
+          - MANAGE_GRADES
+    retry:
+      max-attempts: ${KEYCLOAK_INITIALIZER_MAX_ATTEMPTS:5}
+      initial-backoff-millis: ${KEYCLOAK_INITIALIZER_BACKOFF:2000}
+      multiplier: ${KEYCLOAK_INITIALIZER_BACKOFF_MULTIPLIER:1.5}

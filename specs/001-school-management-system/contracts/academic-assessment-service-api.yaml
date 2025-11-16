@@ -1,0 +1,549 @@
+openapi: 3.0.3
+info:
+  title: Academic Assessment Service API
+  description: API for assessments, grades, and gradebooks
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8084/api/v1
+    description: Local development
+  - url: https://api.schoolmanagement.edu/academic-assessment-service/api/v1
+    description: Production
+
+tags:
+  - name: Assessments
+    description: Assessment creation and management
+  - name: Grades
+    description: Grade recording and management
+  - name: Gradebooks
+    description: Gradebook views
+
+paths:
+  /assessments:
+    post:
+      tags:
+        - Assessments
+      summary: Create a new assessment
+      description: Teacher creates an assessment for a class
+      operationId: createAssessment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssessmentRequest'
+      responses:
+        '201':
+          description: Assessment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /assessments/{assessmentId}:
+    get:
+      tags:
+        - Assessments
+      summary: Get assessment by ID
+      operationId: getAssessment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Assessment found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Assessment not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /assessments/{assessmentId}/publish:
+    post:
+      tags:
+        - Assessments
+      summary: Publish assessment
+      description: Publish assessment to make it available for grade entry
+      operationId: publishAssessment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Assessment published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Assessment not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /grades:
+    post:
+      tags:
+        - Grades
+      summary: Record grades
+      description: Record grades for multiple students on an assessment
+      operationId: recordGrades
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordGradesRequest'
+      responses:
+        '201':
+          description: Grades recorded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GradeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /grades/{gradeId}:
+    put:
+      tags:
+        - Grades
+      summary: Update grade
+      description: Update a grade (maintains audit trail)
+      operationId: updateGrade
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gradeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGradeRequest'
+      responses:
+        '200':
+          description: Grade updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Grade not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /gradebooks/class/{classId}:
+    get:
+      tags:
+        - Gradebooks
+      summary: Get class gradebook
+      description: Get complete gradebook for a class with all assessments and grades
+      operationId: getClassGradebook
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Gradebook data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradebookResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Class not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /gradebooks/student/{studentId}:
+    get:
+      tags:
+        - Gradebooks
+      summary: Get student grades
+      description: Get all grades for a student across all classes
+      operationId: getStudentGrades
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: classId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: academicYear
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Student grades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentGradeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Student not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateAssessmentRequest:
+      type: object
+      required:
+        - classId
+        - name
+        - type
+        - totalPoints
+      properties:
+        classId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/AssessmentType'
+        description:
+          type: string
+        totalPoints:
+          type: number
+          format: decimal
+        weight:
+          type: number
+          format: decimal
+          description: Weight in final grade (percentage)
+        dueDate:
+          type: string
+          format: date
+
+    AssessmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        className:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/AssessmentType'
+        description:
+          type: string
+        totalPoints:
+          type: number
+          format: decimal
+        weight:
+          type: number
+          format: decimal
+        dueDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/AssessmentStatus'
+        createdBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    RecordGradesRequest:
+      type: object
+      required:
+        - assessmentId
+        - grades
+      properties:
+        assessmentId:
+          type: string
+          format: uuid
+        grades:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeInput'
+
+    GradeInput:
+      type: object
+      required:
+        - studentId
+        - score
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        score:
+          type: number
+          format: decimal
+        notes:
+          type: string
+
+    UpdateGradeRequest:
+      type: object
+      required:
+        - score
+      properties:
+        score:
+          type: number
+          format: decimal
+        notes:
+          type: string
+          description: Justification for grade change
+
+    GradeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        studentName:
+          type: string
+        assessmentId:
+          type: string
+          format: uuid
+        assessmentName:
+          type: string
+        score:
+          type: number
+          format: decimal
+        totalPoints:
+          type: number
+          format: decimal
+        percentage:
+          type: number
+          format: decimal
+        letterGrade:
+          type: string
+        notes:
+          type: string
+        recordedBy:
+          type: string
+          format: uuid
+        recordedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    GradebookResponse:
+      type: object
+      properties:
+        classId:
+          type: string
+          format: uuid
+        className:
+          type: string
+        assessments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssessmentResponse'
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentGradebookEntry'
+        statistics:
+          $ref: '#/components/schemas/GradebookStatistics'
+
+    StudentGradebookEntry:
+      type: object
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        studentName:
+          type: string
+        grades:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeResponse'
+        currentAverage:
+          type: number
+          format: decimal
+        letterGrade:
+          type: string
+
+    StudentGradeResponse:
+      type: object
+      properties:
+        classId:
+          type: string
+          format: uuid
+        className:
+          type: string
+        assessmentId:
+          type: string
+          format: uuid
+        assessmentName:
+          type: string
+        assessmentType:
+          $ref: '#/components/schemas/AssessmentType'
+        score:
+          type: number
+          format: decimal
+        totalPoints:
+          type: number
+          format: decimal
+        percentage:
+          type: number
+          format: decimal
+        letterGrade:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+
+    GradebookStatistics:
+      type: object
+      properties:
+        totalStudents:
+          type: integer
+        totalAssessments:
+          type: integer
+        averageScore:
+          type: number
+          format: decimal
+        gradeDistribution:
+          type: object
+          additionalProperties:
+            type: integer
+
+    AssessmentType:
+      type: string
+      enum:
+        - TEST
+        - QUIZ
+        - ASSIGNMENT
+        - PROJECT
+        - EXAM
+        - FINAL_EXAM
+
+    AssessmentStatus:
+      type: string
+      enum:
+        - DRAFT
+        - PUBLISHED
+        - GRADING
+        - COMPLETED
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+

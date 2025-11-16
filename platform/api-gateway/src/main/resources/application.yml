@@ -1,0 +1,92 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  main:
+    web-application-type: reactive
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/v1/users/**,/api/v1/auth/**,/api/v1/permissions/**
+              filters:
+                - StripPrefix=1
+            - id: academic-service
+              uri: lb://academic-service
+              predicates:
+                - Path=/api/v1/academic/**,/api/v1/students/**,/api/v1/academic-records/**
+              filters:
+                - StripPrefix=1
+            - id: attendance-service
+              uri: lb://attendance-service
+              predicates:
+                - Path=/api/v1/attendance/**,/api/v1/reports/**
+              filters:
+                - StripPrefix=1
+            - id: assessment-service
+              uri: lb://academic-assessment-service
+              predicates:
+                - Path=/api/v1/assessments/**,/api/v1/grades/**,/api/v1/gradebooks/**,/api/v1/classes/**
+              filters:
+                - StripPrefix=1
+            - id: search-service
+              uri: lb://search-service
+              predicates:
+                - Path=/api/v1/search/**
+              filters:
+                - StripPrefix=1
+            - id: audit-service
+              uri: lb://audit-service
+              predicates:
+                - Path=/api/v1/audit/**
+              filters:
+                - StripPrefix=1
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/v1/notifications/**
+              filters:
+                - StripPrefix=1
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_SERVER_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:school-management}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+keycloak:
+  realm: ${KEYCLOAK_REALM:school-management}
+  auth-server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8080}
+  resource: ${KEYCLOAK_CLIENT_ID:school-management-client}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+    com.visor.school: DEBUG
+

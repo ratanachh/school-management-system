@@ -1,0 +1,68 @@
+# Kotlin/Java Build Output
+build/
+out/
+target/
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+*.ipr
+*.iws
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+*.log
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Spring Boot
+application-local.yml
+application-*.properties
+!application.properties
+!application.yml
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+log/
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.swp
+
+# Testing
+.coverage/
+coverage/
+.nyc_output/
+test-results/
+
+# Docker
+.dockerignore
+
+# Database
+*.db
+*.sqlite
+*.h2.db
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+

@@ -1,0 +1,75 @@
+{
+  "exchanges": [
+    {
+      "name": "school-management.exchange",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false
+    }
+  ],
+  "queues": [
+    {
+      "name": "user.events",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "academic.events",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "attendance.events",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "assessment.events",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notification.events",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "school-management.exchange",
+      "destination": "user.events",
+      "destination_type": "queue",
+      "routing_key": "user.*"
+    },
+    {
+      "source": "school-management.exchange",
+      "destination": "academic.events",
+      "destination_type": "queue",
+      "routing_key": "academic.*"
+    },
+    {
+      "source": "school-management.exchange",
+      "destination": "attendance.events",
+      "destination_type": "queue",
+      "routing_key": "attendance.*"
+    },
+    {
+      "source": "school-management.exchange",
+      "destination": "assessment.events",
+      "destination_type": "queue",
+      "routing_key": "assessment.*"
+    },
+    {
+      "source": "school-management.exchange",
+      "destination": "notification.events",
+      "destination_type": "queue",
+      "routing_key": "notification.*"
+    }
+  ]
+}
+

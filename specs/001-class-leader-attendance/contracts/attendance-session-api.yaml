@@ -1,0 +1,634 @@
+openapi: 3.0.3
+info:
+  title: Attendance Session API - Class Leader Delegation
+  description: API endpoints for attendance session management, delegation, collection, and approval workflows
+  version: 1.0.0
+  contact:
+    name: School Management System
+    email: support@school-management.example.com
+
+servers:
+  - url: http://localhost:8003/api/v1
+    description: Local development server
+  - url: https://api.school-management.example.com/api/v1
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Attendance Sessions
+    description: Attendance session management and delegation
+  - name: Class Leader Collection
+    description: Class leader attendance collection endpoints
+  - name: Teacher Approval
+    description: Teacher approval and rejection of attendance sessions
+
+paths:
+  /attendance/sessions:
+    post:
+      tags:
+        - Attendance Sessions
+      summary: Create attendance session
+      description: Teacher creates an attendance session for a specific date and class
+      operationId: createAttendanceSession
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '201':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSessionResponse'
+        '400':
+          description: Invalid request (e.g., future date, duplicate session)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '403':
+          description: Forbidden - User lacks MANAGE_ATTENDANCE permission
+        '404':
+          description: Class not found
+        '500':
+          description: Internal server error
+
+  /attendance/sessions/{sessionId}/delegate:
+    post:
+      tags:
+        - Attendance Sessions
+      summary: Delegate session to class leader
+      description: Teacher delegates attendance collection to a class leader (1st, 2nd, or 3rd leader)
+      operationId: delegateToClassLeader
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Attendance session ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DelegateSessionRequest'
+      responses:
+        '200':
+          description: Session delegated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSessionResponse'
+        '400':
+          description: Invalid request (e.g., class leader not assigned to class)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '403':
+          description: Forbidden - User lacks MANAGE_ATTENDANCE permission
+        '404':
+          description: Session or class leader not found
+        '409':
+          description: Conflict - Session already delegated or in wrong state
+        '500':
+          description: Internal server error
+
+  /attendance/sessions/{sessionId}/collect:
+    post:
+      tags:
+        - Class Leader Collection
+      summary: Collect attendance for session
+      description: Class leader collects attendance for all students in the class and submits for approval
+      operationId: collectAttendance
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Attendance session ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectAttendanceRequest'
+      responses:
+        '200':
+          description: Attendance collected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSessionResponse'
+        '400':
+          description: Invalid request (e.g., missing attendance entries, invalid status)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '403':
+          description: Forbidden - User lacks COLLECT_ATTENDANCE permission or is not assigned class leader
+        '404':
+          description: Session not found
+        '409':
+          description: Conflict - Session not in PENDING state
+        '500':
+          description: Internal server error
+
+  /attendance/sessions/{sessionId}/approve:
+    post:
+      tags:
+        - Teacher Approval
+      summary: Approve attendance session
+      description: Teacher approves collected attendance session, making records official
+      operationId: approveSession
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Attendance session ID
+      responses:
+        '200':
+          description: Session approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSessionResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '403':
+          description: Forbidden - User lacks MANAGE_ATTENDANCE permission or is not session creator
+        '404':
+          description: Session not found
+        '409':
+          description: Conflict - Session not in COLLECTED state
+        '500':
+          description: Internal server error
+
+  /attendance/sessions/{sessionId}/reject:
+    post:
+      tags:
+        - Teacher Approval
+      summary: Reject attendance session
+      description: Teacher rejects collected attendance session with a reason, requiring class leader to correct it
+      operationId: rejectSession
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Attendance session ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectSessionRequest'
+      responses:
+        '200':
+          description: Session rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSessionResponse'
+        '400':
+          description: Invalid request (e.g., missing rejection reason)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '403':
+          description: Forbidden - User lacks MANAGE_ATTENDANCE permission or is not session creator
+        '404':
+          description: Session not found
+        '409':
+          description: Conflict - Session not in COLLECTED state
+        '500':
+          description: Internal server error
+
+  /attendance/sessions/{sessionId}:
+    get:
+      tags:
+        - Attendance Sessions
+      summary: Get attendance session
+      description: Retrieve attendance session details with all attendance records
+      operationId: getAttendanceSession
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Attendance session ID
+      responses:
+        '200':
+          description: Session retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSessionDetailResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '403':
+          description: Forbidden - User lacks permission to view session
+        '404':
+          description: Session not found
+        '500':
+          description: Internal server error
+
+  /attendance/sessions:
+    get:
+      tags:
+        - Attendance Sessions
+      summary: List attendance sessions
+      description: Retrieve attendance sessions for a class, date range, or user
+      operationId: listAttendanceSessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: classId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by class ID
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by specific date
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/AttendanceSessionStatus'
+          description: Filter by session status
+        - name: delegatedTo
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by class leader (student ID)
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-indexed)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Page size
+      responses:
+        '200':
+          description: Sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSessionListResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '403':
+          description: Forbidden - User lacks permission to view sessions
+        '500':
+          description: Internal server error
+
+  /attendance/mark:
+    post:
+      tags:
+        - Attendance Sessions
+      summary: Mark attendance directly
+      description: Teacher marks attendance directly without delegation (bypasses session workflow)
+      operationId: markAttendanceDirect
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkAttendanceDirectRequest'
+      responses:
+        '201':
+          description: Attendance marked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecordListResponse'
+        '400':
+          description: Invalid request (e.g., duplicate records, invalid status)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '403':
+          description: Forbidden - User lacks MANAGE_ATTENDANCE permission
+        '404':
+          description: Class not found
+        '409':
+          description: Conflict - Attendance already marked for this date (direct or via session)
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from Keycloak OAuth2 authentication
+
+  schemas:
+    CreateSessionRequest:
+      type: object
+      required:
+        - classId
+        - date
+      properties:
+        classId:
+          type: string
+          format: uuid
+          description: Class ID for attendance session
+        date:
+          type: string
+          format: date
+          description: Attendance date (YYYY-MM-DD)
+        notes:
+          type: string
+          description: Optional notes for the session
+
+    DelegateSessionRequest:
+      type: object
+      required:
+        - classLeaderId
+      properties:
+        classLeaderId:
+          type: string
+          format: uuid
+          description: Student ID of the class leader (1st, 2nd, or 3rd leader)
+
+    CollectAttendanceRequest:
+      type: object
+      required:
+        - attendanceEntries
+      properties:
+        attendanceEntries:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceEntry'
+          description: Attendance entries for all students in the class
+          minItems: 1
+
+    AttendanceEntry:
+      type: object
+      required:
+        - studentId
+        - status
+      properties:
+        studentId:
+          type: string
+          format: uuid
+          description: Student ID
+        status:
+          $ref: '#/components/schemas/AttendanceStatus'
+        notes:
+          type: string
+          description: Optional notes for this student's attendance
+
+    RejectSessionRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          description: Reason for rejection
+          minLength: 10
+          maxLength: 500
+
+    MarkAttendanceDirectRequest:
+      type: object
+      required:
+        - classId
+        - date
+        - attendanceEntries
+      properties:
+        classId:
+          type: string
+          format: uuid
+          description: Class ID
+        date:
+          type: string
+          format: date
+          description: Attendance date (YYYY-MM-DD)
+        attendanceEntries:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceEntry'
+          description: Attendance entries for students
+          minItems: 1
+
+    AttendanceSessionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/AttendanceSessionStatus'
+        delegatedTo:
+          type: string
+          format: uuid
+          description: Class leader student ID
+        createdBy:
+          type: string
+          format: uuid
+          description: Teacher ID who created the session
+        approvedBy:
+          type: string
+          format: uuid
+          nullable: true
+        rejectedBy:
+          type: string
+          format: uuid
+          nullable: true
+        rejectionReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        collectedAt:
+          type: string
+          format: date-time
+          nullable: true
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        rejectedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    AttendanceSessionDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/AttendanceSessionResponse'
+        - type: object
+          properties:
+            attendanceRecords:
+              type: array
+              items:
+                $ref: '#/components/schemas/AttendanceRecordResponse'
+              description: All attendance records for this session
+
+    AttendanceSessionListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceSessionResponse'
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+
+    AttendanceRecordResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/AttendanceStatus'
+        markedBy:
+          type: string
+          format: uuid
+          nullable: true
+          description: Teacher ID (for direct marking)
+        collectedBy:
+          type: string
+          format: uuid
+          nullable: true
+          description: Class leader student ID (for session-based)
+        sessionId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Session ID (if collected via session)
+        approvedBy:
+          type: string
+          format: uuid
+          nullable: true
+          description: Teacher ID who approved (if session-based)
+        notes:
+          type: string
+          nullable: true
+        markedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AttendanceRecordListResponse:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceRecordResponse'
+
+    AttendanceSessionStatus:
+      type: string
+      enum:
+        - PENDING
+        - COLLECTED
+        - APPROVED
+        - REJECTED
+      description: Session status
+
+    AttendanceStatus:
+      type: string
+      enum:
+        - PRESENT
+        - ABSENT
+        - LATE
+        - EXCUSED
+      description: Student attendance status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          description: API path that caused the error
+

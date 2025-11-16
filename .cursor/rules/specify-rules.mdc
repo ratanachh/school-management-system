@@ -1,0 +1,39 @@
+# school-management Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-11-04
+
+## Active Technologies
+- PostgreSQL 17 (primary database for all services), Elasticsearch 8.11.0 (search index), MinIO (object storage for files) (001-school-management-system)
+- Kotlin 2.2.20, OpenJDK 25, Spring Boot 3.5.6 + Spring Cloud (Config Server, Discovery Server, API Gateway), Spring Security, Spring Data JPA, Flyway, RabbitMQ, Elasticsearch, Keycloak (001-school-management-system)
+- PostgreSQL 17 (database per service pattern) (001-school-management-system)
+- Kotlin 2.2.20, OpenJDK 25, Spring Boot 3.5.6 + Spring Cloud (Config Server, Discovery Server, API Gateway), Spring Security, Spring Data JPA, Flyway, RabbitMQ, Keycloak (001-class-leader-attendance)
+- PostgreSQL 17 (extends Attendance Service database schema) (001-class-leader-attendance)
+- Kotlin 2.2.21 with Spring Boot 3.5.7 (Attendance Service, Academic Service); Kotlin CLI for Keycloak initializer (001-class-leader-attendance)
+- PostgreSQL 17 schemas managed via Flyway (attendance, academic); Keycloak 24.0.0 for IAM (001-class-leader-attendance)
+- Kotlin 2.2.21 with Spring Boot 3.5.7 (Attendance Service, Academic Service, User Service); Kotlin starter for Keycloak initializer executed from user-service startup hook + Spring Boot Web/Data/Security, Spring Cloud (Config, Eureka), Keycloak Spring Security adapter, Flyway, RabbitMQ client, Keycloak Admin REST client (official `keycloak-admin-client`) (001-class-leader-attendance)
+
+- Kotlin 2.2.20 + Spring Boot 3.5.6, Spring Cloud (for microservices), Spring Security (Keycloak integration), Spring Data JPA, Spring AMQP (RabbitMQ), Flyway (database migrations), JUnit 5, Mockito (001-school-management-system)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+# Add commands for Kotlin 2.2.20
+
+## Code Style
+
+Kotlin 2.2.20: Follow standard conventions
+
+## Recent Changes
+- 001-class-leader-attendance: Added Kotlin 2.2.21 with Spring Boot 3.5.7 (Attendance Service, Academic Service, User Service); Kotlin starter for Keycloak initializer executed from user-service startup hook + Spring Boot Web/Data/Security, Spring Cloud (Config, Eureka), Keycloak Spring Security adapter, Flyway, RabbitMQ client, Keycloak Admin REST client (official `keycloak-admin-client`)
+- 001-class-leader-attendance: Added Kotlin 2.2.21 with Spring Boot 3.5.7 (Attendance Service, Academic Service); Kotlin CLI for Keycloak initializer
+- 001-class-leader-attendance: Added Kotlin 2.2.20, OpenJDK 25, Spring Boot 3.5.6 + Spring Cloud (Config Server, Discovery Server, API Gateway), Spring Security, Spring Data JPA, Flyway, RabbitMQ, Keycloak
+
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

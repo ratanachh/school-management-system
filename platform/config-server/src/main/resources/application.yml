@@ -1,0 +1,42 @@
+server:
+  port: 8888
+
+spring:
+  profiles:
+    active: jdbc
+  application:
+    name: config-server
+  datasource:
+    url: jdbc:postgresql://localhost:5432/config_server
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  cloud:
+    config:
+      server:
+        jdbc:
+          sql: SELECT KEY, VALUE FROM CONFIG_PROPERTIES WHERE APPLICATION=? AND PROFILE=? AND LABEL=?
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    placeholder-replacement: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.config: INFO
+    com.visor.school: DEBUG
+

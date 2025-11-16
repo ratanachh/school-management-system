@@ -1,0 +1,145 @@
+{
+	"info": {
+		"_postman_id": "audit-service-collection",
+		"name": "Audit Service API",
+		"description": "API collection for Audit Service - Audit Logs and Activity Tracking",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Audit Logs",
+			"item": [
+				{
+					"name": "Query Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit?userId=&action=&startDate=&endDate=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "audit"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "",
+									"description": "Optional: Filter by user ID"
+								},
+								{
+									"key": "action",
+									"value": "",
+									"description": "Optional: Filter by action (CREATE, UPDATE, DELETE, LOGIN, etc.)"
+								},
+								{
+									"key": "startDate",
+									"value": "",
+									"description": "Optional: Start date (ISO format: YYYY-MM-DD)"
+								},
+								{
+									"key": "endDate",
+									"value": "",
+									"description": "Optional: End date (ISO format: YYYY-MM-DD)"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Query Audit Logs by User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit?userId={{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "audit"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "{{userId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Query Audit Logs by Action",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit?action=CREATE",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "audit"],
+							"query": [
+								{
+									"key": "action",
+									"value": "CREATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Query Audit Logs by Date Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit?startDate=2024-01-01&endDate=2024-01-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "audit"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-01-31"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+
