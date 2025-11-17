@@ -25,7 +25,8 @@ data class ClientBlueprint(
     val serviceAccountsEnabled: Boolean = true,
     val redirectUris: List<String> = emptyList(),
     val webOrigins: List<String> = emptyList(),
-    val attributes: Map<String, String> = emptyMap()
+    val attributes: Map<String, String> = emptyMap(),
+    val secret: String? = null
 )
 
 data class RoleBlueprint(

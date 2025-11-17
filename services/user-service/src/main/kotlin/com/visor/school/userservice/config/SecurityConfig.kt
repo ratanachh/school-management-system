@@ -51,10 +51,10 @@ class SecurityConfig(
                     .requestMatchers(
                         "/actuator/**",
                         "/health",
-                        "/api/v1/auth/register",
-                        "/api/v1/auth/verify-email",
-                        "/api/v1/auth/login",
-                        "/api/v1/auth/reset-password",
+                        "/v1/auth/register",
+                        "/v1/auth/verify-email",
+                        "/v1/auth/login",
+                        "/v1/auth/reset-password",
                         "/swagger-ui/**",
                         "/v3/api-docs/**"
                     ).permitAll()

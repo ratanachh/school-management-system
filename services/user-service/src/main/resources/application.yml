@@ -45,6 +45,7 @@ keycloak:
         protocol: openid-connect
         public-client: false
         service-accounts-enabled: true
+        secret: ${KEYCLOAK_SERVICE_CLIENT_SECRET}
         redirect-uris: []
         web-origins: []
         attributes:
@@ -117,4 +118,12 @@ keycloak:
       initial-backoff-millis: ${KEYCLOAK_INITIALIZER_BACKOFF}
       multiplier: ${KEYCLOAK_INITIALIZER_BACKOFF_MULTIPLIER}
       fail-on-error: ${KEYCLOAK_INITIALIZER_FAIL_ON_ERROR}
+
+# Default Super Admin User
+default-admin:
+  email: ${DEFAULT_ADMIN_EMAIL}
+  password: ${DEFAULT_ADMIN_PASSWORD}
+  first-name: ${DEFAULT_ADMIN_FIRSTNAME}
+  last-name: ${DEFAULT_ADMIN_LASTNAME}
+  phone-number: ${DEFAULT_ADMIN_PHONE}
 

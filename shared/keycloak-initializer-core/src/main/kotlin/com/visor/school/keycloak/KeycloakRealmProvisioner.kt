@@ -92,13 +92,25 @@ class KeycloakRealmProvisioner(
                     redirectUris = clientBlueprint.redirectUris
                     webOrigins = clientBlueprint.webOrigins
                     attributes = clientBlueprint.attributes.toMutableMap()
+                    secret = clientBlueprint.secret
                 }
                 clientsResource.create(newClient)
                 log.info("Created Keycloak client '{}'", clientBlueprint.clientId)
+                
+                // If this is a service account client, assign realm-management roles
+                if (clientBlueprint.serviceAccountsEnabled) {
+                    assignServiceAccountRoles(realmResource, clientBlueprint.clientId)
+                }
             } else {
                 val clientResource = clientsResource.get(existing.id)
                 val updated = synchronizeClientRepresentation(existing, clientBlueprint)
-                if (updated) {
+                
+                // Update secret if provided
+                if (clientBlueprint.secret != null && existing.secret != clientBlueprint.secret) {
+                    existing.secret = clientBlueprint.secret
+                    clientResource.update(existing)
+                    log.info("Updated secret for Keycloak client '{}'", clientBlueprint.clientId)
+                } else if (updated) {
                     clientResource.update(existing)
                     log.info("Updated Keycloak client '{}'", clientBlueprint.clientId)
                 }
@@ -263,6 +275,56 @@ class KeycloakRealmProvisioner(
         representation.attributes = attributes
         realmResource.update(representation)
         log.info("Marked realm '{}' as initialized", representation.realm)
+    }
+
+    private fun assignServiceAccountRoles(realmResource: RealmResource, clientId: String) {
+        try {
+            val clientsResource = realmResource.clients()
+            val clientRepresentation = clientsResource.findByClientId(clientId).firstOrNull()
+            if (clientRepresentation == null) {
+                log.warn("Client '{}' not found when assigning service account roles", clientId)
+                return
+            }
+
+            // Get the service account user for this client
+            val serviceAccountUser = clientsResource.get(clientRepresentation.id).serviceAccountUser
+            if (serviceAccountUser == null) {
+                log.warn("Service account user not found for client '{}'", clientId)
+                return
+            }
+
+            // Get the realm-management client
+            val realmManagementClient = clientsResource.findByClientId("realm-management").firstOrNull()
+            if (realmManagementClient == null) {
+                log.warn("realm-management client not found")
+                return
+            }
+
+            // Get the manage-users and view-users roles from realm-management
+            val realmManagementRoles = clientsResource.get(realmManagementClient.id).roles()
+            val rolesToAssign = mutableListOf<RoleRepresentation>()
+            
+            try {
+                rolesToAssign.add(realmManagementRoles.get("manage-users").toRepresentation())
+            } catch (e: Exception) {
+                log.warn("manage-users role not found in realm-management")
+            }
+            
+            try {
+                rolesToAssign.add(realmManagementRoles.get("view-users").toRepresentation())
+            } catch (e: Exception) {
+                log.warn("view-users role not found in realm-management")
+            }
+
+            if (rolesToAssign.isNotEmpty()) {
+                // Assign the roles to the service account user
+                val userResource = realmResource.users().get(serviceAccountUser.id)
+                userResource.roles().clientLevel(realmManagementClient.id).add(rolesToAssign)
+                log.info("Assigned {} realm-management roles to service account for client '{}'", rolesToAssign.size, clientId)
+            }
+        } catch (e: Exception) {
+            log.error("Failed to assign service account roles for client '{}'", clientId, e)
+        }
     }
 
     companion object {

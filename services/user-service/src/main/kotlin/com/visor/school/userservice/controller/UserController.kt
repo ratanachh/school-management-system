@@ -15,7 +15,7 @@ import java.util.UUID
  * User management controller
  */
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/v1/users")
 class UserController(
     private val userService: UserService
 ) {

@@ -37,7 +37,7 @@ class EmailVerificationService(
         val expiresAt = Instant.now().plus(tokenExpiryHours, ChronoUnit.HOURS)
 
         verificationTokens[token] = VerificationToken(
-            userId = user.id,
+            userId = user.id!!,
             email = user.email,
             expiresAt = expiresAt
         )

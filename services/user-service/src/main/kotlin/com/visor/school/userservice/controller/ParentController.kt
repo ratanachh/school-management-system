@@ -15,7 +15,7 @@ import java.util.UUID
  * Parent controller for managing parent-student relationships
  */
 @RestController
-@RequestMapping("/api/v1/parents")
+@RequestMapping("/v1/parents")
 class ParentController(
     private val parentService: ParentService
 ) {

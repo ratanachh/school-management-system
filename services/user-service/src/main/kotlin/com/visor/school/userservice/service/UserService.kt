@@ -93,6 +93,107 @@ class UserService(
     }
 
     /**
+     * Create a user during system initialization (bypasses security checks)
+     * This should only be used by bootstrap/initialization components
+     * If user already exists in Keycloak, syncs it to local database
+     */
+    fun createSystemUser(
+        email: String,
+        firstName: String,
+        lastName: String,
+        role: UserRole,
+        password: String,
+        phoneNumber: String? = null
+    ): User {
+        logger.info("Creating system user: $email with role: $role")
+
+        // Check if user already exists in local database
+        val existingUser = userRepository.findByEmail(email).orElse(null)
+        if (existingUser != null) {
+            logger.info("User already exists in local database: $email")
+            return existingUser
+        }
+
+        try {
+            // Step 1: Create user in Keycloak first (using admin credentials)
+            val keycloakId = keycloakClient.createUserAsAdmin(
+                email = email,
+                firstName = firstName,
+                lastName = lastName,
+                password = password,
+                emailVerified = true
+            )
+
+            // Step 2: Assign role in Keycloak (using admin credentials)
+            keycloakClient.assignRealmRoleAsAdmin(keycloakId, role.name)
+
+            // Step 3: Create User entity with keycloakId
+            val user = User(
+                keycloakId = keycloakId,
+                email = email,
+                firstName = firstName,
+                lastName = lastName,
+                role = role,
+                phoneNumber = phoneNumber,
+                emailVerified = true,
+                accountStatus = AccountStatus.ACTIVE
+            )
+
+            val saved = userRepository.save(user)
+            logger.info("System user created successfully: ${saved.id} (Keycloak ID: $keycloakId)")
+
+            // Publish user created event
+            eventPublisher.publishUserCreated(saved)
+
+            return saved
+        } catch (e: UserAlreadyExistsException) {
+            // User exists in Keycloak but not in local DB - need to sync
+            logger.warn("User exists in Keycloak but not in local database, syncing: $email")
+            
+            try {
+                // Get user from Keycloak to get the keycloakId
+                val keycloakUser = keycloakClient.getUserByEmail(email)
+                    ?: throw IllegalStateException("User exists in Keycloak but could not retrieve details for: $email")
+                
+                // Update user details in Keycloak
+                keycloakUser.firstName = firstName
+                keycloakUser.lastName = lastName
+                keycloakUser.isEmailVerified = true
+                keycloakClient.updateUser(keycloakUser.id, keycloakUser)
+                
+                // Ensure role is assigned in Keycloak
+                keycloakClient.assignRealmRoleAsAdmin(keycloakUser.id, role.name)
+                
+                // Create local User entity
+                val user = User(
+                    keycloakId = keycloakUser.id,
+                    email = email,
+                    firstName = firstName,
+                    lastName = lastName,
+                    role = role,
+                    phoneNumber = phoneNumber,
+                    emailVerified = true,
+                    accountStatus = AccountStatus.ACTIVE
+                )
+
+                val saved = userRepository.save(user)
+                logger.info("System user synced from Keycloak: ${saved.id} (Keycloak ID: ${keycloakUser.id})")
+
+                // Publish user created event
+                eventPublisher.publishUserCreated(saved)
+
+                return saved
+            } catch (syncError: Exception) {
+                logger.error("Failed to sync user from Keycloak: $email", syncError)
+                throw IllegalArgumentException("User exists in Keycloak but failed to sync to local database: ${syncError.message}", syncError)
+            }
+        } catch (e: KeycloakException) {
+            logger.error("Keycloak error while creating system user: $email", e)
+            throw RuntimeException("Failed to create user in Keycloak: ${e.message}", e)
+        }
+    }
+
+    /**
      * Find user by ID
      */
     @Transactional(readOnly = true)
@@ -254,6 +355,14 @@ class UserService(
             it.updateLastLogin()
             userRepository.save(it)
         }
+    }
+
+    /**
+     * Authenticate user with Keycloak
+     * @return LoginResponse with access token and refresh token
+     */
+    fun authenticateUser(email: String, password: String): com.visor.school.userservice.dto.LoginResponse {
+        return keycloakClient.authenticateUser(email, password)
     }
 }
 

@@ -31,7 +31,7 @@ class UserEventPublisher(
      */
     fun publishUserCreated(user: User) {
         val event = UserCreatedEvent(
-            userId = user.id,
+            userId = user.id!!,
             email = user.email,
             role = user.role.name,
             firstName = user.firstName,
@@ -53,7 +53,7 @@ class UserEventPublisher(
      */
     fun publishUserUpdated(user: User) {
         val event = UserUpdatedEvent(
-            userId = user.id,
+            userId = user.id!!,
             email = user.email,
             role = user.role.name,
             accountStatus = user.accountStatus.name
@@ -72,7 +72,7 @@ class UserEventPublisher(
      */
     fun publishEmailVerified(user: User) {
         val event = EmailVerifiedEvent(
-            userId = user.id,
+            userId = user.id!!,
             email = user.email
         )
 
@@ -95,7 +95,7 @@ data class UserCreatedEvent(
     val firstName: String,
     val lastName: String,
     val keycloakId: String
-) : BaseEvent() {
+) : BaseEvent(), java.io.Serializable {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }
@@ -108,7 +108,7 @@ data class UserUpdatedEvent(
     val email: String,
     val role: String,
     val accountStatus: String
-) : BaseEvent() {
+) : BaseEvent(), java.io.Serializable {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }
@@ -119,7 +119,7 @@ data class UserUpdatedEvent(
 data class EmailVerifiedEvent(
     val userId: UUID,
     val email: String
-) : BaseEvent() {
+) : BaseEvent(), java.io.Serializable {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }

@@ -16,7 +16,7 @@ import java.util.UUID
  * Requires ADMINISTRATOR role for permission management operations
  */
 @RestController
-@RequestMapping("/api/v1/permissions")
+@RequestMapping("/v1/permissions")
 class PermissionController(
     private val permissionService: PermissionService
 ) {

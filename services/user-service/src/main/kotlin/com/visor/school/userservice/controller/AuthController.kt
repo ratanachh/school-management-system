@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*
  * Handles user registration, email verification, login (redirects to Keycloak), and password reset
  */
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/v1/auth")
 class AuthController(
     private val userService: UserService,
     private val emailVerificationService: EmailVerificationService,
@@ -68,28 +68,22 @@ class AuthController(
     }
 
     /**
-     * Login (redirects to Keycloak token endpoint)
-     * In a real implementation, this would redirect to Keycloak's token endpoint
+     * Login - Authenticates user with Keycloak and returns JWT tokens
      */
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<ApiResponse<LoginResponse>> {
-        // In production, this would redirect to Keycloak token endpoint:
-        // POST /auth/realms/school-management/protocol/openid-connect/token
-        // with grant_type=password, username, password, client_id, client_secret
-
-        // For now, we'll return a response indicating the user should use Keycloak directly
         val user = userService.findByEmail(request.email)
             ?: throw IllegalArgumentException("User not found")
 
+        // Authenticate with Keycloak and get tokens
+        val loginResponse = userService.authenticateUser(request.email, request.password)
+
         // Update last login
-        userService.updateLastLogin(user.id)
+        userService.updateLastLogin(user.id!!)
 
         return ResponseEntity.ok(
             ApiResponse.success(
-                LoginResponse(
-                    message = "Please use Keycloak token endpoint for authentication",
-                    tokenEndpoint = "http://localhost:8080/auth/realms/school-management/protocol/openid-connect/token"
-                ),
+                loginResponse,
                 "Login successful"
             )
         )
