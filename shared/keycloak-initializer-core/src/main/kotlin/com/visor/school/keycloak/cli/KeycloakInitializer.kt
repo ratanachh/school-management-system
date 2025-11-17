@@ -9,7 +9,7 @@ import org.springframework.boot.runApplication
 import kotlin.math.max
 
 @SpringBootApplication(scanBasePackages = ["com.visor.school.keycloak"])
-class ManualInitializerApplication(
+class KeycloakInitializerApplication(
     private val initializerService: InitializerService,
     private val properties: InitializerProperties
 ) : CommandLineRunner {
@@ -30,16 +30,16 @@ class ManualInitializerApplication(
         while (attempt <= retry.maxAttempts) {
             try {
                 val outcome = initializerService.initialize(blueprint)
-                log.info("Manual Keycloak initialization finished with status {}", outcome.status)
+                log.info("Keycloak initialization finished with status {}", outcome.status)
                 log.info(outcome.message)
                 return
             } catch (ex: Exception) {
                 if (attempt == retry.maxAttempts) {
-                    log.error("Keycloak manual initialization failed after {} attempts", attempt, ex)
+                    log.error("Keycloak initialization failed after {} attempts", attempt, ex)
                     throw ex
                 }
                 log.warn(
-                    "Manual Keycloak initialization attempt {} failed: {}. Retrying in {} ms",
+                    "Keycloak initialization attempt {} failed: {}. Retrying in {} ms",
                     attempt,
                     ex.message,
                     backoff
@@ -60,5 +60,5 @@ class ManualInitializerApplication(
 }
 
 fun main(args: Array<String>) {
-    runApplication<ManualInitializerApplication>(*args)
+    runApplication<KeycloakInitializerApplication>(*args)
 }

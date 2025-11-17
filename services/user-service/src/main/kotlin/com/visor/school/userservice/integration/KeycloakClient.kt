@@ -18,17 +18,17 @@ import jakarta.ws.rs.core.Response
 class KeycloakClient(
     @Value("\${keycloak.server-url}") private val serverUrl: String,
     @Value("\${keycloak.realm}") private val realm: String,
-    @Value("\${keycloak.admin-client-id}") private val adminClientId: String,
-    @Value("\${keycloak.admin-client-secret}") private val adminClientSecret: String
+    @Value("\${keycloak.service-client-id}") private val serviceClientId: String,
+    @Value("\${keycloak.service-client-secret}") private val serviceClientSecret: String
 ) {
     private val logger = LoggerFactory.getLogger(KeycloakClient::class.java)
 
     private val keycloak: Keycloak by lazy {
         KeycloakBuilder.builder()
             .serverUrl(serverUrl)
-            .realm("master")
-            .clientId(adminClientId)
-            .clientSecret(adminClientSecret)
+            .realm(realm)
+            .clientId(serviceClientId)
+            .clientSecret(serviceClientSecret)
             .grantType("client_credentials")
             .build()
     }

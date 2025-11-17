@@ -1,6 +1,10 @@
 package com.visor.school.keycloak.client
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider
 import com.visor.school.keycloak.config.InitializerProperties
+import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl
 import org.keycloak.OAuth2Constants
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
@@ -17,6 +21,16 @@ class KeycloakAdminClientFactory(
 
     fun <T> withAdminClient(action: (Keycloak) -> T): T {
         val admin = properties.admin
+        
+        // Configure ObjectMapper to ignore unknown properties from newer Keycloak versions
+        val objectMapper = ObjectMapper().apply {
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        }
+        
+        val resteasyClient = ResteasyClientBuilderImpl()
+            .register(JacksonJsonProvider(objectMapper))
+            .build()
+        
         KeycloakBuilder.builder()
             .serverUrl(admin.url)
             .realm(ADMIN_REALM)
@@ -24,8 +38,15 @@ class KeycloakAdminClientFactory(
             .username(admin.username)
             .password(admin.password)
             .grantType(OAuth2Constants.PASSWORD)
+            .resteasyClient(resteasyClient)
             .build()
-            .use { client -> return action(client) }
+            .use { client -> 
+                try {
+                    return action(client)
+                } finally {
+                    resteasyClient.close()
+                }
+            }
     }
 
     companion object {

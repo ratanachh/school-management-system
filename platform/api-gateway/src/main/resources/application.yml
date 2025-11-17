@@ -73,7 +73,7 @@ eureka:
 keycloak:
   realm: ${KEYCLOAK_REALM:school-management}
   auth-server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8080}
-  resource: ${KEYCLOAK_CLIENT_ID:school-management-client}
+  resource: ${KEYCLOAK_CLIENT_ID}
 
 management:
   endpoints:

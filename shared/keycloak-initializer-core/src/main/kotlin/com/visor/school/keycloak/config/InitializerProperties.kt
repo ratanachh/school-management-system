@@ -99,6 +99,7 @@ data class InitializerProperties(
     data class Retry(
         val maxAttempts: Int = 5,
         val initialBackoffMillis: Long = 2_000L,
-        val multiplier: Double = 1.5
+        val multiplier: Double = 1.5,
+        val failOnError: Boolean = false
     )
 }

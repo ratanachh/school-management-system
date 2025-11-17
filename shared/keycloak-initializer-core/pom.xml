@@ -19,7 +19,7 @@
     <description>Shared library for idempotent Keycloak realm, client, and role provisioning.</description>
 
     <properties>
-        <keycloak.admin.client.version>24.0.0</keycloak.admin.client.version>
+        <keycloak.admin.client.version>26.0.7</keycloak.admin.client.version>
     </properties>
 
     <dependencies>
@@ -89,9 +89,6 @@
                     <sourceDirs>
                         <sourceDir>src/main/kotlin</sourceDir>
                     </sourceDirs>
-                    <testSourceDirs>
-                        <testSourceDir>src/test/kotlin</testSourceDir>
-                    </testSourceDirs>
                 </configuration>
                 <executions>
                     <execution>
@@ -114,7 +111,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.visor.school.keycloak.cli.ManualInitializerApplicationKt</mainClass>
+                    <mainClass>com.visor.school.keycloak.cli.KeycloakInitializerApplicationKt</mainClass>
                 </configuration>
             </plugin>
         </plugins>

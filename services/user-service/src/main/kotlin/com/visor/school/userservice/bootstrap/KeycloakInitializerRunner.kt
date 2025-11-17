@@ -34,8 +34,17 @@ class KeycloakInitializerRunner(
                 return
             } catch (ex: Exception) {
                 if (attempt == retry.maxAttempts) {
-                    log.error("Keycloak initialization failed after {} attempts", attempt, ex)
-                    throw ex
+                    if (retry.failOnError) {
+                        log.error("Keycloak initialization failed after {} attempts", attempt, ex)
+                        throw ex
+                    } else {
+                        log.warn(
+                            "Keycloak initialization failed after {} attempts. Application will start without Keycloak initialization. Error: {}",
+                            attempt,
+                            ex.message
+                        )
+                        return
+                    }
                 }
 
                 log.warn(
@@ -49,7 +58,12 @@ class KeycloakInitializerRunner(
                     Thread.sleep(max(100L, backoff))
                 } catch (interrupted: InterruptedException) {
                     Thread.currentThread().interrupt()
-                    throw ex
+                    if (retry.failOnError) {
+                        throw ex
+                    } else {
+                        log.warn("Keycloak initialization interrupted. Application will start without Keycloak initialization.")
+                        return
+                    }
                 }
 
                 backoff = (backoff * retry.multiplier).toLong()

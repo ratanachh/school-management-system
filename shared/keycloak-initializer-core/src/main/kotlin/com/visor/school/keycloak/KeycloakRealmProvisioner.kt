@@ -26,6 +26,9 @@ class KeycloakRealmProvisioner(
             val realms = keycloak.realms()
             val realmResource = ensureRealm(realms, blueprint)
 
+            log.debug("Blueprint has {} clients, {} realm roles, {} client roles, {} composites", 
+                blueprint.clients.size, blueprint.realmRoles.size, blueprint.clientRoles.size, blueprint.composites.size)
+            
             ensureClients(realmResource, blueprint.clients)
             ensureRealmRoles(realmResource, blueprint)
             ensureClientRoles(realmResource, blueprint)
@@ -45,7 +48,8 @@ class KeycloakRealmProvisioner(
                 id = realmName
                 realm = realmName
                 isEnabled = blueprint.realm.enabled
-                attributes = blueprint.realm.attributes.toMutableMap()
+                // Don't set the initialization flag yet - it will be set after all provisioning is complete
+                attributes = blueprint.realm.attributes.filterKeys { it != INITIALIZED_FLAG_KEY }.toMutableMap()
             }
             realms.create(newRealm)
             log.info("Created Keycloak realm '{}'", realmName)
@@ -75,6 +79,7 @@ class KeycloakRealmProvisioner(
     }
 
     private fun ensureClients(realmResource: RealmResource, clients: List<ClientBlueprint>) {
+        log.info("ensureClients called with {} clients", clients.size)
         val clientsResource = realmResource.clients()
         clients.forEach { clientBlueprint ->
             val existing = clientsResource.findByClientId(clientBlueprint.clientId).firstOrNull()
