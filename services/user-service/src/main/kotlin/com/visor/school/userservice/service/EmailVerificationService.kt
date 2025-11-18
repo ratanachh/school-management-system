@@ -1,5 +1,7 @@
 package com.visor.school.userservice.service
 
+import com.visor.school.userservice.integration.KeycloakClient
+import com.visor.school.userservice.model.AccountStatus
 import com.visor.school.userservice.model.User
 import com.visor.school.userservice.repository.UserRepository
 import org.slf4j.LoggerFactory
@@ -14,12 +16,14 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Email verification service with token generation and validation
+ * When email is verified, account status is changed from PENDING to ACTIVE
  */
 @Service
 @Transactional
 class EmailVerificationService(
     private val userRepository: UserRepository,
     private val emailService: EmailService,
+    private val keycloakClient: KeycloakClient,
     @Value("\${email.verification.token.expiry.hours:24}") private val tokenExpiryHours: Long
 ) {
     private val logger = LoggerFactory.getLogger(EmailVerificationService::class.java)
@@ -67,13 +71,20 @@ class EmailVerificationService(
             .orElseThrow { IllegalArgumentException("User not found") }
 
         user.verifyEmail()
+        
+        // Activate account if it was pending
+        if (user.accountStatus == AccountStatus.PENDING) {
+            user.updateStatus(AccountStatus.ACTIVE)
+            logger.info("Account activated for user: ${user.id} (email verified)")
+        }
+        
         userRepository.save(user)
 
-        // Update Keycloak email verification
-        // Note: This would require KeycloakClient integration
+        // Update Keycloak email verification status
+        keycloakClient.updateEmailVerification(user.keycloakId, true)
 
         verificationTokens.remove(token)
-        logger.info("Email verified for user: ${user.id}")
+        logger.info("Email verified and account activated for user: ${user.id}")
 
         return true
     }

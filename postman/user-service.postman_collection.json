@@ -27,8 +27,113 @@
 							"raw": "{{baseUrl}}/api/v1/auth/register",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "auth", "register"]
+						},
+						"description": "Register a new user. Requires SUPER_ADMIN role or MANAGE_ADMINISTRATORS permission for ADMINISTRATOR role. Role must be one of: STUDENT, TEACHER, PARENT, ADMINISTRATOR, SUPER_ADMIN"
+					},
+					"response": [
+						{
+							"name": "Success - User Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"user@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"STUDENT\",\n  \"password\": \"SecurePassword123!\",\n  \"phoneNumber\": \"+855123456789\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/register",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"email\": \"user@example.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"role\": \"STUDENT\",\n    \"emailVerified\": false,\n    \"accountStatus\": \"PENDING\"\n  },\n  \"message\": \"User created successfully. Verification email sent. Please verify your email to activate your account.\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\"\n}"
+						},
+						{
+							"name": "Error - User Already Exists",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"existing@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"STUDENT\",\n  \"password\": \"SecurePassword123!\",\n  \"phoneNumber\": \"+855123456789\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/register",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Conflict",
+							"code": 409,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"error\": \"USER_ALREADY_EXISTS\",\n  \"message\": \"User with email existing@example.com already exists in Keycloak\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\",\n  \"path\": \"/v1/auth/register\",\n  \"status\": 409\n}"
 						}
-					}
+					]
+				},
+				{
+					"name": "Register Student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"student@school.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"role\": \"STUDENT\",\n  \"password\": \"Student@123456\",\n  \"phoneNumber\": \"+855123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "register"]
+						},
+						"description": "Register a new student. The role field is required and must be set to 'STUDENT'. Requires SUPER_ADMIN role or MANAGE_ADMINISTRATORS permission for ADMINISTRATOR role."
+					},
+					"response": [
+						{
+							"name": "Success - Student Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"student@school.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"role\": \"STUDENT\",\n  \"password\": \"Student@123456\",\n  \"phoneNumber\": \"+855123456789\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/register",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"email\": \"student@school.com\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Smith\",\n    \"role\": \"STUDENT\",\n    \"emailVerified\": false,\n    \"accountStatus\": \"PENDING\"\n  },\n  \"message\": \"User created successfully. Verification email sent. Please verify your email to activate your account.\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Verify Email",
@@ -49,10 +154,58 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "auth", "verify-email"]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"token\": \"verification-token-from-email\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/verify-email",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "verify-email"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Email verified successfully. Your account has been activated and you can now log in.\"\n  },\n  \"message\": \"Email verified successfully. Your account has been activated.\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.collectionVariables.set(\"accessToken\", jsonData.data.accessToken);",
+									"        pm.collectionVariables.set(\"refreshToken\", jsonData.data.refreshToken);",
+									"        console.log(\"Access token and refresh token saved to collection variables\");",
+									"    }",
+									"} else {",
+									"    console.log(\"Login failed: \" + pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -63,14 +216,121 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+							"raw": "{\n  \"email\": \"admin@school.com\",\n  \"password\": \"Admin@123456\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/login",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "auth", "login"]
+						},
+						"description": "Authenticate user with email and password. Returns JWT access token and refresh token."
+					},
+					"response": [
+						{
+							"name": "Success - Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"admin@school.com\",\n  \"password\": \"Admin@123456\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "login"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"accessToken\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"expiresIn\": 300,\n    \"refreshExpiresIn\": 1800,\n    \"tokenType\": \"Bearer\"\n  },\n  \"message\": \"Login successful\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\"\n}"
+						},
+						{
+							"name": "Error - Invalid Credentials (401)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"wrong@example.com\",\n  \"password\": \"WrongPassword123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "login"]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"error\": \"AUTHENTICATION_FAILED\",\n  \"message\": \"Invalid email or password\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\",\n  \"path\": \"/v1/auth/login\",\n  \"status\": 401\n}"
+						},
+						{
+							"name": "Error - User Not Found",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"nonexistent@example.com\",\n  \"password\": \"Password123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "login"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"error\": \"BAD_REQUEST\",\n  \"message\": \"User not found\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\",\n  \"path\": \"/v1/auth/login\",\n  \"status\": 400\n}"
+						},
+						{
+							"name": "Error - Account Pending",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"pending@example.com\",\n  \"password\": \"Password123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "login"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"error\": \"INVALID_STATE\",\n  \"message\": \"Your account is pending approval. Please wait for administrator approval or verify your email.\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\",\n  \"path\": \"/v1/auth/login\",\n  \"status\": 400\n}"
 						}
-					}
+					]
 				},
 				{
 					"name": "Request Password Reset",
@@ -91,7 +351,35 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "auth", "reset-password"]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"user@example.com\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/auth/reset-password",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "auth", "reset-password"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Password reset email sent\"\n  },\n  \"message\": \"Password reset email sent successfully\",\n  \"timestamp\": \"2025-11-17T14:00:00Z\"\n}"
+						}
+					]
 				}
 			]
 		},
@@ -137,7 +425,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"+855123456789\"\n}"
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"+855123456789\",\n  \"role\": \"STUDENT\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/users/:id",
@@ -205,6 +493,46 @@
 								{
 									"key": "role",
 									"value": ""
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Administrators",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/administrators",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "administrators"]
+						}
+					}
+				},
+				{
+					"name": "Get Administrator by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/administrators/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "administrators", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{userId}}"
 								}
 							]
 						}
@@ -503,7 +831,11 @@
 			"key": "permissionId",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
 		}
 	]
 }
-

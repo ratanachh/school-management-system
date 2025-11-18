@@ -55,16 +55,23 @@ class UserService(
         }
 
         try {
-            // Step 1: Create user in Keycloak first
+            // Step 1: Create user in Keycloak first with attributes
             val keycloakId = keycloakClient.createUser(
                 email = email,
                 firstName = firstName,
                 lastName = lastName,
                 password = password,
-                emailVerified = false
+                emailVerified = false,
+                attributes = mapOf(
+                    "firstLogin" to "true"
+                )
             )
 
-            // Step 2: Create User entity with keycloakId
+            // Step 2: Assign role in Keycloak (using admin client for permissions)
+            keycloakClient.assignRealmRoleAsAdmin(keycloakId, role.name)
+            logger.info("Role ${role.name} assigned to Keycloak user: $keycloakId")
+
+            // Step 3: Create User entity with keycloakId
             val user = User(
                 keycloakId = keycloakId,
                 email = email,
@@ -73,7 +80,7 @@ class UserService(
                 lastName = lastName,
                 phoneNumber = phoneNumber,
                 emailVerified = false,
-                accountStatus = AccountStatus.ACTIVE
+                accountStatus = AccountStatus.PENDING
             )
 
             val saved = userRepository.save(user)
@@ -85,10 +92,10 @@ class UserService(
             return saved
         } catch (e: UserAlreadyExistsException) {
             logger.error("User already exists in Keycloak: $email", e)
-            throw IllegalArgumentException("User with email $email already exists in Keycloak", e)
+            throw IllegalArgumentException("User with email $email already exists!", e)
         } catch (e: KeycloakException) {
             logger.error("Keycloak error while creating user: $email", e)
-            throw RuntimeException("Failed to create user in Keycloak: ${e.message}", e)
+            throw RuntimeException("Failed to create user: ${e.message}", e)
         }
     }
 
@@ -121,7 +128,10 @@ class UserService(
                 firstName = firstName,
                 lastName = lastName,
                 password = password,
-                emailVerified = true
+                emailVerified = true,
+                attributes = mapOf(
+                    "firstLogin" to "true"
+                )
             )
 
             // Step 2: Assign role in Keycloak (using admin credentials)
@@ -347,13 +357,32 @@ class UserService(
     }
 
     /**
-     * Update last login timestamp
+     * Update last login timestamp and mark firstLogin as false if it was true
      */
     fun updateLastLogin(id: UUID) {
         val user = userRepository.findById(id).orElse(null)
         user?.let {
+            val wasFirstLogin = it.keycloakId?.let { keycloakId ->
+                val keycloakUser = keycloakClient.getUser(keycloakId)
+                keycloakUser?.attributes?.get("firstLogin")?.firstOrNull() == "true"
+            } ?: false
+            
             it.updateLastLogin()
             userRepository.save(it)
+            
+            // Update firstLogin attribute in Keycloak if this was the first login
+            if (wasFirstLogin) {
+                it.keycloakId?.let { keycloakId ->
+                    val keycloakUser = keycloakClient.getUser(keycloakId)
+                    if (keycloakUser != null) {
+                        keycloakUser.attributes = (keycloakUser.attributes ?: mutableMapOf()).apply {
+                            put("firstLogin", listOf("false"))
+                        }
+                        keycloakClient.updateUser(keycloakId, keycloakUser)
+                        logger.info("Updated firstLogin attribute to false for user: $id")
+                    }
+                }
+            }
         }
     }
 

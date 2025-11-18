@@ -58,6 +58,7 @@ class KeycloakClient(
 
     /**
      * Create a new user in Keycloak (using service account)
+     * @param attributes Optional map of user attributes. Values are converted to lists as Keycloak expects Map<String, List<String>>
      * @return Keycloak user ID (UUID as string)
      */
     fun createUser(
@@ -65,7 +66,8 @@ class KeycloakClient(
         firstName: String,
         lastName: String,
         password: String,
-        emailVerified: Boolean = false
+        emailVerified: Boolean = false,
+        attributes: Map<String, String> = emptyMap()
     ): String {
         return createUserInternal(
             keycloakClient = keycloak,
@@ -73,13 +75,15 @@ class KeycloakClient(
             firstName = firstName,
             lastName = lastName,
             password = password,
-            emailVerified = emailVerified
+            emailVerified = emailVerified,
+            attributes = attributes
         )
     }
 
     /**
      * Create a new user in Keycloak using admin credentials
      * This should only be used for system initialization (e.g., creating first admin user)
+     * @param attributes Optional map of user attributes. Values are converted to lists as Keycloak expects Map<String, List<String>>
      * @return Keycloak user ID (UUID as string)
      */
     fun createUserAsAdmin(
@@ -87,7 +91,8 @@ class KeycloakClient(
         firstName: String,
         lastName: String,
         password: String,
-        emailVerified: Boolean = false
+        emailVerified: Boolean = false,
+        attributes: Map<String, String> = emptyMap()
     ): String {
         return createUserInternal(
             keycloakClient = adminKeycloak,
@@ -95,12 +100,14 @@ class KeycloakClient(
             firstName = firstName,
             lastName = lastName,
             password = password,
-            emailVerified = emailVerified
+            emailVerified = emailVerified,
+            attributes = attributes
         )
     }
 
     /**
      * Internal method to create user with specified Keycloak client
+     * @param attributes Optional map of user attributes. Values are converted to lists as Keycloak expects Map<String, List<String>>
      */
     private fun createUserInternal(
         keycloakClient: Keycloak,
@@ -108,7 +115,8 @@ class KeycloakClient(
         firstName: String,
         lastName: String,
         password: String,
-        emailVerified: Boolean
+        emailVerified: Boolean,
+        attributes: Map<String, String> = emptyMap()
     ): String {
         logger.info("Creating user in Keycloak: $email")
 
@@ -119,6 +127,13 @@ class KeycloakClient(
             this.isEnabled = true
             this.isEmailVerified = emailVerified
             this.username = email
+            
+            // Set user attributes if provided
+            // Keycloak expects Map<String, List<String>> for attributes
+            if (attributes.isNotEmpty()) {
+                this.attributes = attributes.mapValues { listOf(it.value) }.toMutableMap()
+                logger.info("Setting user attributes: ${attributes.keys}")
+            }
         }
 
         val response = keycloakClient.realm(realm).users().create(userRepresentation)
@@ -263,22 +278,22 @@ class KeycloakClient(
      * @return LoginResponse with access token and refresh token
      */
     fun authenticateUser(email: String, password: String): LoginResponse {
+        val tokenUrl = "$serverUrl/realms/$realm/protocol/openid-connect/token"
+        
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+
+        val body: MultiValueMap<String, String> = LinkedMultiValueMap()
+        body.add("grant_type", "password")
+        body.add("client_id", serviceClientId)
+        body.add("client_secret", serviceClientSecret)
+        body.add("username", email)
+        body.add("password", password)
+
+        val request = HttpEntity(body, headers)
+        val restTemplate = RestTemplate()
+        
         try {
-            val tokenUrl = "$serverUrl/realms/$realm/protocol/openid-connect/token"
-            
-            val headers = HttpHeaders()
-            headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-
-            val body: MultiValueMap<String, String> = LinkedMultiValueMap()
-            body.add("grant_type", "password")
-            body.add("client_id", serviceClientId)
-            body.add("client_secret", serviceClientSecret)
-            body.add("username", email)
-            body.add("password", password)
-
-            val request = HttpEntity(body, headers)
-            val restTemplate = RestTemplate()
-            
             val response = restTemplate.postForEntity(tokenUrl, request, Map::class.java)
             val responseBody = response.body ?: throw KeycloakException("Failed to authenticate: empty response")
 
@@ -289,9 +304,37 @@ class KeycloakClient(
                 refreshExpiresIn = responseBody["refresh_expires_in"] as Int,
                 tokenType = (responseBody["token_type"] as? String) ?: "Bearer"
             )
+        } catch (e: org.springframework.web.client.HttpClientErrorException) {
+            val errorMessage = extractErrorMessageFromResponse(e) ?: "Authentication failed"
+            logger.error("Failed to authenticate user: $errorMessage", e)
+            throw KeycloakException(errorMessage, e)
         } catch (e: Exception) {
             logger.error("Failed to authenticate user: ${e.message}", e)
             throw KeycloakException("Authentication failed: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Extract error message from Keycloak error response
+     * Keycloak returns errors in JSON format with 'error' and 'error_description' fields
+     */
+    private fun extractErrorMessageFromResponse(exception: org.springframework.web.client.HttpClientErrorException): String? {
+        return try {
+            val responseBody = exception.responseBodyAsString
+            if (responseBody.isNotBlank()) {
+                // Try to parse JSON response from Keycloak
+                // Keycloak error format: {"error":"invalid_grant","error_description":"Invalid user credentials"}
+                val objectMapper = com.fasterxml.jackson.databind.ObjectMapper()
+                @Suppress("UNCHECKED_CAST")
+                val errorMap = objectMapper.readValue(responseBody, Map::class.java) as? Map<String, Any>
+                errorMap?.get("error_description") as? String
+                    ?: errorMap?.get("error") as? String
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            logger.debug("Could not parse error response body: ${e.message}")
+            null
         }
     }
 }

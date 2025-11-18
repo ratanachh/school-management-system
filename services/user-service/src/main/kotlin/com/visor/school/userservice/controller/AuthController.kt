@@ -49,11 +49,12 @@ class AuthController(
         emailVerificationService.sendVerificationEmail(user)
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.success(UserResponse.from(user), "User created successfully. Verification email sent."))
+            .body(ApiResponse.success(UserResponse.from(user), "User created successfully. Verification email sent. Please verify your email to activate your account."))
     }
 
     /**
      * Verify email with token
+     * When email is verified, account status is automatically changed from PENDING to ACTIVE
      */
     @PostMapping("/verify-email")
     fun verifyEmail(@Valid @RequestBody request: VerifyEmailRequest): ResponseEntity<ApiResponse<Map<String, String>>> {
@@ -61,8 +62,10 @@ class AuthController(
 
         return ResponseEntity.ok(
             ApiResponse.success(
-                mapOf("message" to "Email verified successfully"),
-                "Email verified successfully"
+                mapOf(
+                    "message" to "Email verified successfully. Your account has been activated and you can now log in."
+                ),
+                "Email verified successfully. Your account has been activated."
             )
         )
     }
@@ -74,6 +77,23 @@ class AuthController(
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<ApiResponse<LoginResponse>> {
         val user = userService.findByEmail(request.email)
             ?: throw IllegalArgumentException("User not found")
+
+        // Check if account is active
+        if (user.accountStatus != com.visor.school.userservice.model.AccountStatus.ACTIVE) {
+            throw IllegalStateException(
+                when (user.accountStatus) {
+                    com.visor.school.userservice.model.AccountStatus.PENDING -> 
+                        "Your account is pending approval. Please wait for administrator approval or verify your email."
+                    com.visor.school.userservice.model.AccountStatus.INACTIVE -> 
+                        "Your account is inactive. Please contact administrator."
+                    com.visor.school.userservice.model.AccountStatus.SUSPENDED -> 
+                        "Your account has been suspended. Please contact administrator."
+                    com.visor.school.userservice.model.AccountStatus.DELETED -> 
+                        "Your account has been deleted. Please contact administrator."
+                    else -> "Your account is not active. Please contact administrator."
+                }
+            )
+        }
 
         // Authenticate with Keycloak and get tokens
         val loginResponse = userService.authenticateUser(request.email, request.password)
