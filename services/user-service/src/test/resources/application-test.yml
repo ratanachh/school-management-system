@@ -1,0 +1,82 @@
+# Test configuration for user-service
+spring:
+  application:
+    name: user-service
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      enabled: false
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: false
+  flyway:
+    enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8070/realms/school-management
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+# Keycloak configuration for tests
+keycloak:
+  server-url: http://localhost:8070
+  realm: school-management
+  service-client-id: user-profile
+  service-client-secret: test-secret
+  admin-username: admin
+  admin-password: admin
+  admin-client-id: admin-cli
+  initializer:
+    enabled: false
+    admin:
+      url: http://localhost:8070
+      username: admin
+      password: admin
+      client-id: admin-cli
+    realm:
+      name: school-management
+      enabled: true
+      attributes: {}
+    clients: []
+    realm-roles: []
+    client-roles: []
+    composites: []
+    retry:
+      max-attempts: 3
+      initial-backoff-millis: 1000
+      multiplier: 2.0
+      fail-on-error: false
+
+# Disable Eureka for tests
+eureka:
+  client:
+    enabled: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# Default admin user configuration for tests
+default-admin:
+  email: admin@test.com
+  password: admin123
+  first-name: Admin
+  last-name: User
+  phone-number: "1234567890"
+

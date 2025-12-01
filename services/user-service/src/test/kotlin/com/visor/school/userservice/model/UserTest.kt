@@ -17,7 +17,8 @@ class UserTest {
             lastName = "Doe"
         )
 
-        assertNotNull(user.id)
+        // id is nullable and will be null until persisted by JPA
+        assertNull(user.id)
         assertEquals("keycloak-123", user.keycloakId)
         assertEquals("test@example.com", user.email)
         assertEquals(UserRole.TEACHER, user.role)

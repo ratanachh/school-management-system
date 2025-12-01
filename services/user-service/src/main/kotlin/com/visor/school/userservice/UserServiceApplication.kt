@@ -6,13 +6,15 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 
-@SpringBootApplication
+@SpringBootApplication(
+    scanBasePackages = ["com.visor.school.userservice", "com.visor.school.keycloak"]
+)
 @EnableDiscoveryClient
 @ComponentScan(
     basePackages = ["com.visor.school.userservice", "com.visor.school.keycloak"],
     excludeFilters = [ComponentScan.Filter(
-        type = FilterType.ASSIGNABLE_TYPE,
-        classes = [com.visor.school.keycloak.cli.KeycloakInitializerApplication::class]
+        type = FilterType.REGEX,
+        pattern = [".*KeycloakInitializerApplication.*"]
     )]
 )
 class UserServiceApplication

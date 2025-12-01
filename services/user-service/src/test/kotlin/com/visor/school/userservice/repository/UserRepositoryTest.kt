@@ -8,10 +8,23 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.context.annotation.Import
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
 import java.util.UUID
 
-@DataJpaTest
+@DataJpaTest(
+    excludeAutoConfiguration = [
+        RabbitAutoConfiguration::class,
+        SecurityAutoConfiguration::class,
+        OAuth2ResourceServerAutoConfiguration::class
+    ]
+)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
+@Import(RepositoryTestConfiguration::class)
 class UserRepositoryTest @Autowired constructor(
     private val userRepository: UserRepository
 ) {
@@ -27,7 +40,7 @@ class UserRepositoryTest @Autowired constructor(
         )
 
         val saved = userRepository.save(user)
-        val found = userRepository.findById(saved.id)
+        val found = userRepository.findById(saved.id!!)
 
         assertTrue(found.isPresent)
         assertEquals(saved.id, found.get().id)

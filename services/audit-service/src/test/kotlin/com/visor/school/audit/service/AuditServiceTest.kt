@@ -76,8 +76,8 @@ class AuditServiceTest {
                 userAgent = "Mozilla/5.0"
             )
         )
-        whenever(auditRepository.findByUserIdAndTimestampBetween(
-            any(), any(), any()
+        whenever(auditRepository.findByUserIdAndActionAndTimestampBetween(
+            any(), any(), any(), any()
         )).thenReturn(records)
 
         // When
@@ -90,7 +90,7 @@ class AuditServiceTest {
 
         // Then
         assertEquals(1, result.size)
-        verify(auditRepository).findByUserIdAndTimestampBetween(any(), any(), any())
+        verify(auditRepository).findByUserIdAndActionAndTimestampBetween(any(), any(), any(), any())
     }
 
     @Test

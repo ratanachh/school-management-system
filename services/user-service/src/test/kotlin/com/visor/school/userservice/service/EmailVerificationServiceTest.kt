@@ -5,6 +5,7 @@ import com.visor.school.userservice.model.User
 import com.visor.school.userservice.model.UserRole
 import com.visor.school.userservice.repository.UserRepository
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -25,7 +26,9 @@ class EmailVerificationServiceTest {
     @Mock
     private lateinit var emailService: EmailService
 
-    @InjectMocks
+    @Mock
+    private lateinit var keycloakClient: com.visor.school.userservice.integration.KeycloakClient
+
     private lateinit var emailVerificationService: EmailVerificationService
 
     private lateinit var testUser: User
@@ -35,9 +38,11 @@ class EmailVerificationServiceTest {
         emailVerificationService = EmailVerificationService(
             userRepository = userRepository,
             emailService = emailService,
+            keycloakClient = keycloakClient,
             tokenExpiryHours = 24
         )
         testUser = User(
+            id = UUID.randomUUID(),
             keycloakId = "keycloak-123",
             email = "test@example.com",
             role = UserRole.TEACHER,
@@ -67,12 +72,12 @@ class EmailVerificationServiceTest {
     fun `should verify email with valid token`() {
         // Given
         emailVerificationService.sendVerificationEmail(testUser)
-        val token = emailVerificationService.javaClass.getDeclaredField("verificationTokens")
+        val tokensMap = emailVerificationService.javaClass.getDeclaredField("verificationTokens")
             .apply { isAccessible = true }
-            .get(emailVerificationService) as java.util.Map<*, *>
-            .keys.first().toString()
+            .get(emailVerificationService) as Map<*, *>
+        val token = tokensMap.keys.first().toString()
 
-        whenever(userRepository.findById(testUser.id)).thenReturn(Optional.of(testUser))
+        whenever(userRepository.findById(testUser.id!!)).thenReturn(Optional.of(testUser))
         whenever(userRepository.save(any())).thenAnswer { it.arguments[0] as User }
 
         // When
@@ -98,7 +103,7 @@ class EmailVerificationServiceTest {
         emailVerificationService.sendVerificationEmail(testUser)
         val tokens = emailVerificationService.javaClass.getDeclaredField("verificationTokens")
             .apply { isAccessible = true }
-            .get(emailVerificationService) as java.util.Map<String, *>
+            .get(emailVerificationService) as Map<String, *>
 
         // Manually expire the token
         val token = tokens.keys.first()
@@ -120,7 +125,7 @@ class EmailVerificationServiceTest {
         emailVerificationService.sendVerificationEmail(testUser)
         val tokens = emailVerificationService.javaClass.getDeclaredField("verificationTokens")
             .apply { isAccessible = true }
-            .get(emailVerificationService) as java.util.Map<String, *>
+            .get(emailVerificationService) as Map<String, *>
 
         // Manually expire the token
         val token = tokens.keys.first()

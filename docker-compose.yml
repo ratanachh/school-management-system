@@ -1,0 +1,10 @@
+services:
+  cloudflared:
+    container_name: cloudflared
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: >
+      tunnel --no-autoupdate run
+      --token eyJhIjoiZjRkZDVkNzA0MTJlMTA1MDhkZjM4ZjQwNDEzMDM0ODciLCJ0IjoiNzRjMzcwNGUtNjk5NC00MzYwLTk5ZDYtYmE1ZGI0MmIwN2IzIiwicyI6IlpEZGtOekV6WmpndFlUWmpPUzAwWkRRMExUaGlOamd0WmpsaFpqWTFNR001WkdRdyJ9
+
+#docker run cloudflare/cloudflared:latest tunnel --no-autoupdate run --token eyJhIjoiZjRkZDVkNzA0MTJlMTA1MDhkZjM4ZjQwNDEzMDM0ODciLCJ0IjoiNzRjMzcwNGUtNjk5NC00MzYwLTk5ZDYtYmE1ZGI0MmIwN2IzIiwicyI6IlpEZGtOekV6WmpndFlUWmpPUzAwWkRRMExUaGlOamd0WmpsaFpqWTFNR001WkdRdyJ9

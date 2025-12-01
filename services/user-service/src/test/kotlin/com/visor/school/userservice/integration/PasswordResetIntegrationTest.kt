@@ -6,17 +6,23 @@ import com.visor.school.userservice.service.PasswordResetService
 import com.visor.school.userservice.service.UserService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
+import org.junit.jupiter.api.Disabled
 
 /**
  * Integration test for password reset flow via Keycloak Admin API
+ * 
+ * Note: This test requires Keycloak to be running or Testcontainers
+ * TODO: Add Testcontainers support for Keycloak
  */
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@Disabled("Requires Keycloak instance or Testcontainers setup")
 class PasswordResetIntegrationTest @Autowired constructor(
     private val userService: UserService,
     private val passwordResetService: PasswordResetService,

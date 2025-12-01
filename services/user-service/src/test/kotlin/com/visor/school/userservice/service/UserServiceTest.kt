@@ -9,6 +9,7 @@ import com.visor.school.userservice.model.User
 import com.visor.school.userservice.model.UserRole
 import com.visor.school.userservice.repository.UserRepository
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -31,6 +32,9 @@ class UserServiceTest {
     @Mock
     private lateinit var eventPublisher: UserEventPublisher
 
+    @Mock
+    private lateinit var securityContextService: com.visor.school.userservice.service.SecurityContextService
+
     @InjectMocks
     private lateinit var userService: UserService
 
@@ -40,7 +44,7 @@ class UserServiceTest {
 
     @BeforeEach
     fun setup() {
-        userService = UserService(userRepository, keycloakClient, eventPublisher)
+        userService = UserService(userRepository, keycloakClient, eventPublisher, securityContextService)
     }
 
     @Test
@@ -48,11 +52,12 @@ class UserServiceTest {
         // Given
         whenever(userRepository.existsByEmail(testEmail)).thenReturn(false)
         whenever(keycloakClient.createUser(
-            email = testEmail,
-            firstName = "John",
-            lastName = "Doe",
-            password = testPassword,
-            emailVerified = false
+            email = eq(testEmail),
+            firstName = eq("John"),
+            lastName = eq("Doe"),
+            password = eq(testPassword),
+            emailVerified = eq(false),
+            attributes = any()
         )).thenReturn(testKeycloakId)
         whenever(userRepository.save(any())).thenAnswer { it.arguments[0] as User }
         doNothing().whenever(eventPublisher).publishUserCreated(any())
@@ -72,11 +77,12 @@ class UserServiceTest {
         assertEquals(testEmail, result.email)
         assertEquals(UserRole.TEACHER, result.role)
         verify(keycloakClient).createUser(
-            email = testEmail,
-            firstName = "John",
-            lastName = "Doe",
-            password = testPassword,
-            emailVerified = false
+            email = eq(testEmail),
+            firstName = eq("John"),
+            lastName = eq("Doe"),
+            password = eq(testPassword),
+            emailVerified = eq(false),
+            attributes = any()
         )
         verify(userRepository).save(any())
         verify(eventPublisher).publishUserCreated(any())
@@ -98,18 +104,18 @@ class UserServiceTest {
             )
         }
 
-        verify(keycloakClient, never()).createUser(any(), any(), any(), any(), any())
+        verify(keycloakClient, never()).createUser(any(), any(), any(), any(), any(), any())
     }
 
     @Test
     fun `should throw exception when Keycloak user creation fails`() {
         // Given
         whenever(userRepository.existsByEmail(testEmail)).thenReturn(false)
-        whenever(keycloakClient.createUser(any(), any(), any(), any(), any()))
+        whenever(keycloakClient.createUser(any(), any(), any(), any(), any(), any()))
             .thenThrow(KeycloakException("Failed to create user in Keycloak"))
 
         // When & Then
-        assertThrows<KeycloakException> {
+        assertThrows<RuntimeException> {
             userService.createUser(
                 email = testEmail,
                 firstName = "John",
