@@ -12,6 +12,8 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
 import java.util.UUID
+import org.junit.ClassRule
+import org.junit.Rule
 
 /**
  * Integration test for cross-service communication via RabbitMQ
@@ -26,7 +28,8 @@ class CrossServiceCommunicationTest @Autowired constructor(
 ) {
 
     companion object {
-        @Container
+        @JvmField
+        @ClassRule
         val rabbitMQ = RabbitMQContainer("rabbitmq:3-management")
             .withReuse(true)
     }
@@ -40,7 +43,6 @@ class CrossServiceCommunicationTest @Autowired constructor(
         // When
         val student = studentService.enrollStudent(
             userId = userId,
-            studentId = studentId,
             firstName = "Cross",
             lastName = "Service",
             dateOfBirth = LocalDate.of(2010, 1, 1),
@@ -52,8 +54,6 @@ class CrossServiceCommunicationTest @Autowired constructor(
         
         // Verify student was enrolled
         assert(student != null)
-        assert(student.studentId == studentId)
         assert(student.enrollmentStatus == EnrollmentStatus.ENROLLED)
     }
 }
-

@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
+import org.junit.jupiter.api.assertThrows
 
 /**
  * Integration test for homeroom class creation (grades 1-6)
@@ -35,7 +36,8 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             userId = userId,
             qualifications = listOf("Elementary Education Certificate"),
             subjectSpecializations = listOf("General Education"),
-            hireDate = LocalDate.of(2020, 1, 1)
+            hireDate = LocalDate.of(2020, 1, 1),
+            department = ""
         )
 
         // When
@@ -70,7 +72,8 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             userId = userId,
             qualifications = listOf("Elementary Education Certificate"),
             subjectSpecializations = listOf("General Education"),
-            hireDate = LocalDate.of(2020, 1, 1)
+            hireDate = LocalDate.of(2020, 1, 1),
+            department = ""
         )
 
         // When
@@ -96,7 +99,8 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             userId = userId,
             qualifications = listOf("Teaching Certificate"),
             subjectSpecializations = listOf("Mathematics"),
-            hireDate = LocalDate.of(2020, 1, 1)
+            hireDate = LocalDate.of(2020, 1, 1),
+            department = ""
         )
 
         // When & Then
@@ -120,7 +124,8 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             userId = userId,
             qualifications = listOf("Elementary Education Certificate"),
             subjectSpecializations = listOf("General Education"),
-            hireDate = LocalDate.of(2020, 1, 1)
+            hireDate = LocalDate.of(2020, 1, 1),
+            department = ""
         )
 
         classService.createHomeroomClass(
@@ -153,7 +158,8 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             userId = userId1,
             qualifications = listOf("Elementary Education Certificate"),
             subjectSpecializations = listOf("General Education"),
-            hireDate = LocalDate.of(2020, 1, 1)
+            hireDate = LocalDate.of(2020, 1, 1),
+            department = ""
         )
 
         val userId2 = UUID.randomUUID()
@@ -161,7 +167,8 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             userId = userId2,
             qualifications = listOf("Elementary Education Certificate"),
             subjectSpecializations = listOf("General Education"),
-            hireDate = LocalDate.of(2020, 1, 1)
+            hireDate = LocalDate.of(2020, 1, 1),
+            department = ""
         )
 
         // When
@@ -199,7 +206,8 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             userId = userId,
             qualifications = listOf("Elementary Education Certificate"),
             subjectSpecializations = listOf("General Education"),
-            hireDate = LocalDate.of(2020, 1, 1)
+            hireDate = LocalDate.of(2020, 1, 1),
+            department = ""
         )
 
         // When - Create homeroom classes for different terms
@@ -228,4 +236,3 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         assertEquals(Term.SECOND_TERM, secondTermClass.term)
     }
 }
-

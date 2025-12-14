@@ -75,12 +75,9 @@ data class StudentEnrolledEvent(
     val studentIdNumber: String,
     val firstName: String,
     val lastName: String,
-    val gradeLevel: Int,
-    override val eventId: UUID = UUID.randomUUID(),
-    override val eventType: String = "StudentEnrolledEvent",
-    override val timestamp: Instant = Instant.now(),
-    override val version: String = "1.0"
+    val gradeLevel: Int
 ) : BaseEvent() {
+    override val eventType: String = "StudentEnrolledEvent"
     override fun getAggregateId(): UUID = studentId
     override fun getAggregateType(): String = "Student"
 }
@@ -92,13 +89,9 @@ data class StudentUpdatedEvent(
     val studentId: UUID,
     val userId: UUID,
     val gradeLevel: Int,
-    val enrollmentStatus: String,
-    override val eventId: UUID = UUID.randomUUID(),
-    override val eventType: String = "StudentUpdatedEvent",
-    override val timestamp: Instant = Instant.now(),
-    override val version: String = "1.0"
+    val enrollmentStatus: String
 ) : BaseEvent() {
+    override val eventType: String = "StudentUpdatedEvent"
     override fun getAggregateId(): UUID = studentId
     override fun getAggregateType(): String = "Student"
 }
-

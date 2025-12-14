@@ -12,6 +12,7 @@
     # pkgs.nodejs_20
     # pkgs.nodePackages.nodemon
     pkgs.jdk25_headless
+    pkgs.maven
   ];
 
   # Sets environment variables in the workspace
@@ -24,6 +25,9 @@
       "vscjava.vscode-java-pack"
       "ms-azuretools.vscode-docker"
       "docker.docker"
+      "fwcd.kotlin"
+      "mathiasfrohlich.Kotlin"
+      "VMware.vscode-boot-dev-pack"
     ];
 
     # Enable previews

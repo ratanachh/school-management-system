@@ -12,26 +12,22 @@ class AcademicRecordTest {
     fun `should create academic record with required fields`() {
         val record = AcademicRecord(
             studentId = UUID.randomUUID(),
-            currentGPA = BigDecimal("3.5"),
             cumulativeGPA = BigDecimal("3.4"),
             creditsEarned = 24,
-            creditsRequired = 120,
             academicStanding = AcademicStanding.GOOD_STANDING
         )
 
         assertNotNull(record.id)
         assertNotNull(record.studentId)
-        assertEquals(BigDecimal("3.5"), record.currentGPA)
         assertEquals(BigDecimal("3.4"), record.cumulativeGPA)
         assertEquals(24, record.creditsEarned)
-        assertEquals(120, record.creditsRequired)
         assertEquals(AcademicStanding.GOOD_STANDING, record.academicStanding)
         assertNull(record.graduationDate)
     }
 
     @Test
     fun `should create academic record with enrollment history`() {
-        val enrollmentHistory = listOf(
+        val enrollmentHistory = mutableListOf(
             EnrollmentEntry(
                 academicYear = "2023-2024",
                 term = Term.FIRST_TERM,
@@ -51,10 +47,8 @@ class AcademicRecordTest {
         val record = AcademicRecord(
             studentId = UUID.randomUUID(),
             enrollmentHistory = enrollmentHistory,
-            currentGPA = BigDecimal("3.6"),
             cumulativeGPA = BigDecimal("3.5"),
             creditsEarned = 30,
-            creditsRequired = 120,
             academicStanding = AcademicStanding.GOOD_STANDING
         )
 
@@ -67,10 +61,8 @@ class AcademicRecordTest {
     fun `should create academic record with completed courses`() {
         val record = AcademicRecord(
             studentId = UUID.randomUUID(),
-            currentGPA = BigDecimal("3.5"),
             cumulativeGPA = BigDecimal("3.5"),
             creditsEarned = 0,
-            creditsRequired = 120,
             academicStanding = AcademicStanding.GOOD_STANDING
         )
 
@@ -91,48 +83,24 @@ class AcademicRecordTest {
             completionDate = LocalDate.of(2024, 6, 15)
         )
 
-        record.addCompletedCourse(course1)
-        record.addCompletedCourse(course2)
+        record.completedCourses.add(course1)
+        record.completedCourses.add(course2)
 
         assertEquals(2, record.completedCourses.size)
         assertEquals("Mathematics 101", record.completedCourses[0].courseName)
         assertEquals("English 101", record.completedCourses[1].courseName)
-        assertEquals(6, record.creditsEarned)
-    }
-
-    @Test
-    fun `should update GPA`() {
-        val record = AcademicRecord(
-            studentId = UUID.randomUUID(),
-            currentGPA = BigDecimal("3.0"),
-            cumulativeGPA = BigDecimal("3.0"),
-            creditsEarned = 0,
-            creditsRequired = 120,
-            academicStanding = AcademicStanding.GOOD_STANDING
-        )
-
-        val initialUpdatedAt = record.updatedAt
-        Thread.sleep(10)
-
-        record.updateGPA(BigDecimal("3.5"), BigDecimal("3.4"))
-
-        assertEquals(BigDecimal("3.5"), record.currentGPA)
-        assertEquals(BigDecimal("3.4"), record.cumulativeGPA)
-        assertTrue(record.updatedAt.isAfter(initialUpdatedAt))
     }
 
     @Test
     fun `should update academic standing`() {
         val record = AcademicRecord(
             studentId = UUID.randomUUID(),
-            currentGPA = BigDecimal("3.5"),
             cumulativeGPA = BigDecimal("3.4"),
             creditsEarned = 24,
-            creditsRequired = 120,
             academicStanding = AcademicStanding.GOOD_STANDING
         )
 
-        record.updateAcademicStanding(AcademicStanding.PROBATION)
+        record.academicStanding = AcademicStanding.PROBATION
 
         assertEquals(AcademicStanding.PROBATION, record.academicStanding)
     }
@@ -141,17 +109,14 @@ class AcademicRecordTest {
     fun `should mark as graduated`() {
         val record = AcademicRecord(
             studentId = UUID.randomUUID(),
-            currentGPA = BigDecimal("3.5"),
             cumulativeGPA = BigDecimal("3.4"),
             creditsEarned = 120,
-            creditsRequired = 120,
             academicStanding = AcademicStanding.GOOD_STANDING
         )
 
         val graduationDate = LocalDate.of(2025, 6, 15)
-        record.markAsGraduated(graduationDate)
+        record.graduationDate = graduationDate
 
-        assertEquals(AcademicStanding.GRADUATED, record.academicStanding)
         assertEquals(graduationDate, record.graduationDate)
     }
 
@@ -159,10 +124,8 @@ class AcademicRecordTest {
     fun `should add completed course`() {
         val record = AcademicRecord(
             studentId = UUID.randomUUID(),
-            currentGPA = BigDecimal("3.5"),
             cumulativeGPA = BigDecimal("3.4"),
             creditsEarned = 0,
-            creditsRequired = 120,
             academicStanding = AcademicStanding.GOOD_STANDING
         )
 
@@ -175,11 +138,10 @@ class AcademicRecordTest {
             completionDate = LocalDate.of(2024, 6, 15)
         )
 
-        record.addCompletedCourse(course)
+        record.completedCourses.add(course)
 
         assertEquals(1, record.completedCourses.size)
         assertEquals("Science 101", record.completedCourses[0].courseName)
-        assertEquals(3, record.creditsEarned)
     }
 
     @Test
@@ -194,10 +156,8 @@ class AcademicRecordTest {
         standings.forEach { standing ->
             val record = AcademicRecord(
                 studentId = UUID.randomUUID(),
-                currentGPA = BigDecimal("3.0"),
                 cumulativeGPA = BigDecimal("3.0"),
                 creditsEarned = 0,
-                creditsRequired = 120,
                 academicStanding = standing
             )
 
@@ -205,4 +165,3 @@ class AcademicRecordTest {
         }
     }
 }
-

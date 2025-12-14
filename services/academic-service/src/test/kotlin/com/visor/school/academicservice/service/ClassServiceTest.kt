@@ -7,6 +7,7 @@ import com.visor.school.academicservice.repository.TeacherRepository
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -43,6 +44,7 @@ class ClassServiceTest {
     fun `should create homeroom class for grades 1-6`() {
         // Given
         val teacher = Teacher(
+            id = testTeacherId,
             employeeId = "EMP-001",
             userId = testTeacherId,
             subjectSpecializations = listOf("General"),
@@ -102,7 +104,9 @@ class ClassServiceTest {
             classTeacherId = null,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
-            startDate = LocalDate.of(2024, 9, 1)
+            status = ClassStatus.SCHEDULED,
+            startDate = LocalDate.of(2024, 9, 1),
+            endDate = null
         )
         whenever(teacherRepository.findById(testTeacherId)).thenReturn(Optional.of(mock()))
         whenever(classRepository.findByAcademicYearAndTermAndTypeAndGrade(any(), any(), any(), any()))
@@ -157,9 +161,12 @@ class ClassServiceTest {
             classTeacherId = null,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
-            startDate = LocalDate.of(2024, 9, 1)
+            status = ClassStatus.SCHEDULED,
+            startDate = LocalDate.of(2024, 9, 1),
+            endDate = null
         )
         val teacher = Teacher(
+            id = testTeacherId,
             employeeId = "EMP-001",
             userId = testTeacherId,
             subjectSpecializations = listOf("Mathematics"),
@@ -199,7 +206,9 @@ class ClassServiceTest {
             classTeacherId = null,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
-            startDate = LocalDate.of(2024, 9, 1)
+            status = ClassStatus.SCHEDULED,
+            startDate = LocalDate.of(2024, 9, 1),
+            endDate = null
         )
         whenever(classRepository.findById(classEntity.id)).thenReturn(Optional.of(classEntity))
 
@@ -221,9 +230,12 @@ class ClassServiceTest {
             classTeacherId = null,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
-            startDate = LocalDate.of(2024, 9, 1)
+            status = ClassStatus.SCHEDULED,
+            startDate = LocalDate.of(2024, 9, 1),
+            endDate = null
         )
         val teacher = Teacher(
+            id = testTeacherId,
             employeeId = "EMP-001",
             userId = testTeacherId,
             subjectSpecializations = listOf("Mathematics"),
@@ -254,8 +266,9 @@ class ClassServiceTest {
             classTeacherId = null,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
+            status = ClassStatus.SCHEDULED,
             startDate = LocalDate.of(2024, 9, 1),
-            status = ClassStatus.SCHEDULED
+            endDate = null
         )
         whenever(classRepository.findById(classEntity.id)).thenReturn(Optional.of(classEntity))
         whenever(classRepository.save(any())).thenAnswer { it.arguments[0] as Class }
@@ -268,4 +281,3 @@ class ClassServiceTest {
         verify(classRepository).save(classEntity)
     }
 }
-

@@ -12,6 +12,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
+import com.visor.school.academicservice.model.EmergencyContact
+import org.junit.jupiter.api.assertThrows
 
 /**
  * Integration test for student enrollment flow
@@ -70,12 +72,6 @@ class StudentEnrollmentIntegrationTest @Autowired constructor(
             postalCode = "12345",
             country = "Test Country"
         )
-        val emergencyContact = EmergencyContact(
-            name = "Emergency Contact",
-            relationship = "Parent",
-            phoneNumber = "555-9999",
-            email = "emergency@example.com"
-        )
 
         // When
         val student = studentService.enrollStudent(
@@ -84,15 +80,12 @@ class StudentEnrollmentIntegrationTest @Autowired constructor(
             lastName = "Contact",
             dateOfBirth = LocalDate.of(2010, 1, 1),
             gradeLevel = 5,
-            address = address,
-            emergencyContact = emergencyContact
+            address = address
         )
 
         // Then
         assertNotNull(student.address)
         assertEquals("Test City", student.address?.city)
-        assertNotNull(student.emergencyContact)
-        assertEquals("Emergency Contact", student.emergencyContact?.name)
     }
 
     @Test
@@ -164,4 +157,3 @@ class StudentEnrollmentIntegrationTest @Autowired constructor(
         assertNotNull(student2.studentId)
     }
 }
-

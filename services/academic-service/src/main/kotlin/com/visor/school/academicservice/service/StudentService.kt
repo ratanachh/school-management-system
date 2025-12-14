@@ -1,5 +1,6 @@
 package com.visor.school.academicservice.service
 
+import com.visor.school.academicservice.event.StudentEventPublisher
 import com.visor.school.academicservice.model.Address
 import com.visor.school.academicservice.model.EmergencyContact
 import com.visor.school.academicservice.model.EnrollmentStatus
@@ -177,4 +178,3 @@ class StudentService(
         return studentRepository.save(student)
     }
 }
-

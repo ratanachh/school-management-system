@@ -191,6 +191,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.visor.school.userservice.UserServiceApplicationKt</mainClass>
+                    <jvmArguments>
+                        -Dspring.config.import=optional:file:./../../.env[.properties]
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <execution>

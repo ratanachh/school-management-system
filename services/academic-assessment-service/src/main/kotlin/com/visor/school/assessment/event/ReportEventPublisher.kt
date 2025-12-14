@@ -69,6 +69,7 @@ data class ReportCollectedEvent(
     val eventTimestamp: Instant = Instant.now(),
     val eventVersion: String = "1.0"
 ) : BaseEvent(eventIdOverride, eventTimestamp, eventVersion) {
+    override val eventType: String = "report.collected"
     override fun getAggregateId(): UUID = collectionId
     override fun getAggregateType(): String = "ExamResultCollection"
 }
@@ -85,7 +86,7 @@ data class ReportSubmittedEvent(
     val eventTimestamp: Instant = Instant.now(),
     val eventVersion: String = "1.0"
 ) : BaseEvent(eventIdOverride, eventTimestamp, eventVersion) {
+    override val eventType: String = "report.submitted"
     override fun getAggregateId(): UUID = submissionId
     override fun getAggregateType(): String = "ReportSubmission"
 }
-

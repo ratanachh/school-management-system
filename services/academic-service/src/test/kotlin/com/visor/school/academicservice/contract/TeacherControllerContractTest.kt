@@ -3,7 +3,9 @@ package com.visor.school.academicservice.contract
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.visor.school.academicservice.controller.TeacherController
 import com.visor.school.academicservice.model.EmploymentStatus
+import com.visor.school.academicservice.model.Teacher
 import com.visor.school.academicservice.service.TeacherService
+import io.mockk.every
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -25,7 +27,7 @@ class TeacherControllerContractTest @Autowired constructor(
     private lateinit var teacherService: TeacherService
 
     @Test
-    fun `POST /api/v1/teachers should create teacher and return 201`() {
+    fun `create teacher should return 201`() {
         // Given
         val request = mapOf(
             "userId" to UUID.randomUUID().toString(),
@@ -48,9 +50,20 @@ class TeacherControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/teachers/{id} should return teacher`() {
+    fun `get teacher by id should return teacher`() {
         // Given
         val teacherId = UUID.randomUUID()
+        val mockTeacher = Teacher(
+            id = teacherId.toString(),
+            userId = UUID.randomUUID().toString(),
+            employeeId = "",
+            qualifications = emptyList(),
+            subjectSpecializations = emptyList(),
+            hireDate = LocalDate.now(),
+            employmentStatus = EmploymentStatus.ACTIVE,
+            department = ""
+        )
+        every { teacherService.getTeacherById(teacherId.toString()) } returns mockTeacher
 
         // When & Then
         mockMvc.perform(
@@ -61,13 +74,14 @@ class TeacherControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/teachers/status/{status} should return teachers by status`() {
+    fun `get teachers by status should return teachers`() {
         // Given
-        val status = EmploymentStatus.ACTIVE.name
+        val status = EmploymentStatus.ACTIVE
+        every { teacherService.getTeachersByStatus(status, 1) } returns emptyList<Teacher>()
 
         // When & Then
         mockMvc.perform(
-            get("/api/v1/teachers/status/{status}", status)
+            get("/api/v1/teachers/status/{status}", status.name)
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
@@ -75,9 +89,10 @@ class TeacherControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/teachers/department/{department} should return teachers by department`() {
+    fun `get teachers by department should return teachers`() {
         // Given
         val department = "Science"
+        every { teacherService.getTeachersByDepartment(department, 1) } returns emptyList<Teacher>()
 
         // When & Then
         mockMvc.perform(
@@ -89,7 +104,7 @@ class TeacherControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `PATCH /api/v1/teachers/{id}/status should update employment status`() {
+    fun `update employment status should update status`() {
         // Given
         val teacherId = UUID.randomUUID()
         val request = mapOf("status" to EmploymentStatus.ON_LEAVE.name)
@@ -106,7 +121,7 @@ class TeacherControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/teachers should reject request without subject specializations`() {
+    fun `create teacher without specializations should reject`() {
         // Given
         val request = mapOf(
             "userId" to UUID.randomUUID().toString(),
@@ -125,7 +140,7 @@ class TeacherControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/teachers/{teacherId}/assignments should assign teacher to class`() {
+    fun `assign teacher to class should assign teacher`() {
         // Given
         val teacherId = UUID.randomUUID()
         val request = mapOf(
@@ -134,14 +149,11 @@ class TeacherControllerContractTest @Autowired constructor(
         )
 
         // When & Then
-        // Note: This endpoint may need to be implemented in TeacherController
-        // For now, testing the contract structure
         mockMvc.perform(
             post("/api/v1/teachers/{teacherId}/assignments", teacherId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
         )
-            .andExpect(status().isCreated.or(status().isNotFound)) // May return 404 if not implemented
+            .andExpect(status().isCreated)
     }
 }
-

@@ -94,7 +94,7 @@ class TeacherController(
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     fun updateEmploymentStatus(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: UpdateStatusRequest
+        @Valid @RequestBody request: UpdateTeacherStatusRequest
     ): ResponseEntity<ApiResponse<TeacherResponse>> {
         val teacher = teacherService.updateEmploymentStatus(id, request.status)
         return ResponseEntity.ok(ApiResponse.success(TeacherResponse.from(teacher), "Employment status updated"))
@@ -116,7 +116,7 @@ data class CreateTeacherRequest(
     val department: String? = null
 )
 
-data class UpdateStatusRequest(
+data class UpdateTeacherStatusRequest(
     @field:NotNull
     val status: EmploymentStatus
 )
@@ -146,4 +146,3 @@ data class TeacherResponse(
         }
     }
 }
-

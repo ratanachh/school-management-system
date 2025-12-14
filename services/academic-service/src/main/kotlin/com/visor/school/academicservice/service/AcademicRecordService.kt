@@ -1,5 +1,6 @@
 package com.visor.school.academicservice.service
 
+import com.visor.school.academicservice.event.AcademicRecordEventPublisher
 import com.visor.school.academicservice.model.AcademicRecord
 import com.visor.school.academicservice.model.AcademicStanding
 import com.visor.school.academicservice.repository.AcademicRecordRepository
@@ -124,4 +125,3 @@ class AcademicRecordService(
         return saved
     }
 }
-

@@ -181,6 +181,7 @@ data class UserCreatedEvent(
     val lastName: String,
     val keycloakId: String
 ) : BaseEvent(), java.io.Serializable {
+    override val eventType: String = "UserCreatedEvent"
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }
@@ -194,6 +195,7 @@ data class UserUpdatedEvent(
     val role: String,
     val accountStatus: String
 ) : BaseEvent(), java.io.Serializable {
+    override val eventType: String = "UserUpdatedEvent"
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }
@@ -205,7 +207,7 @@ data class EmailVerifiedEvent(
     val userId: UUID,
     val email: String
 ) : BaseEvent(), java.io.Serializable {
+    override val eventType: String = "EmailVerifiedEvent"
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }
-

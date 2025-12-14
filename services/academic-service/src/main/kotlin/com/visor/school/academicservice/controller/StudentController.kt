@@ -157,7 +157,7 @@ class StudentController(
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     fun updateEnrollmentStatus(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: UpdateStatusRequest
+        @Valid @RequestBody request: UpdateStudentStatusRequest
     ): ResponseEntity<ApiResponse<StudentResponse>> {
         val student = studentService.updateEnrollmentStatus(id, request.status)
         return ResponseEntity.ok(ApiResponse.success(StudentResponse.from(student), "Enrollment status updated"))
@@ -206,7 +206,7 @@ data class UpdateStudentRequest(
     val emergencyContact: EmergencyContactRequest? = null
 )
 
-data class UpdateStatusRequest(
+data class UpdateStudentStatusRequest(
     @field:NotNull
     val status: EnrollmentStatus
 )
@@ -286,4 +286,3 @@ data class StudentResponse(
         }
     }
 }
-

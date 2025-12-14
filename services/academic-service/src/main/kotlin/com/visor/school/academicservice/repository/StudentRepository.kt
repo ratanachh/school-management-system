@@ -20,6 +20,5 @@ interface StudentRepository : JpaRepository<Student, UUID> {
     fun searchByName(@Param("name") name: String): List<Student>
     
     @Query("SELECT s FROM Student s WHERE s.gradeLevel = :gradeLevel AND s.enrollmentStatus = :status")
-    fun findByGradeLevelAndStatus(@Param("gradeLevel") gradeLevel: Int, @Param("status") EnrollmentStatus): List<Student>
+    fun findByGradeLevelAndStatus(@Param("gradeLevel") gradeLevel: Int, @Param("status") status: EnrollmentStatus): List<Student>
 }
-

@@ -2,9 +2,12 @@ package com.visor.school.academicservice.contract
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.visor.school.academicservice.controller.ClassController
+import com.visor.school.academicservice.model.Class
 import com.visor.school.academicservice.model.ClassStatus
+import com.visor.school.academicservice.model.ClassType
 import com.visor.school.academicservice.model.Term
 import com.visor.school.academicservice.service.ClassService
+import io.mockk.every
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -14,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
 
 @WebMvcTest(ClassController::class)
@@ -27,7 +29,7 @@ class ClassControllerContractTest @Autowired constructor(
     private lateinit var classService: ClassService
 
     @Test
-    fun `POST /api/v1/classes/homeroom should create homeroom class and return 201`() {
+    fun `create homeroom class should return 201`() {
         // Given
         val request = mapOf(
             "className" to "Grade 3 Homeroom",
@@ -51,7 +53,7 @@ class ClassControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/classes/homeroom should reject invalid grade level`() {
+    fun `create homeroom class with invalid grade should reject`() {
         // Given
         val request = mapOf(
             "className" to "Invalid Homeroom",
@@ -72,7 +74,7 @@ class ClassControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/classes/subject should create subject class and return 201`() {
+    fun `create subject class should return 201`() {
         // Given
         val request = mapOf(
             "className" to "Mathematics 101",
@@ -96,7 +98,7 @@ class ClassControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/classes/{classId}/class-teacher should assign class teacher and return 200`() {
+    fun `assign class teacher should return 200`() {
         // Given
         val classId = UUID.randomUUID()
         val request = mapOf(
@@ -115,9 +117,21 @@ class ClassControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/classes/{id} should return class`() {
+    fun `get class by id should return class`() {
         // Given
         val classId = UUID.randomUUID()
+        val mockClass = Class(
+            id = classId,
+            className = "Test Class",
+            gradeLevel = 5,
+            classType = ClassType.HOMEROOM,
+            academicYear = "2024-2025",
+            term = Term.FIRST_TERM,
+            startDate = LocalDate.now(),
+            status = ClassStatus.SCHEDULED
+
+        )
+        every { classService.getClassById(classId.toString()) } returns mockClass
 
         // When & Then
         mockMvc.perform(
@@ -128,9 +142,10 @@ class ClassControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/classes/grade/{gradeLevel} should return classes by grade`() {
+    fun `get classes by grade should return classes`() {
         // Given
         val gradeLevel = 5
+        every { classService.getClassesByGrade(gradeLevel, 1) } returns emptyList<Class>()
 
         // When & Then
         mockMvc.perform(
@@ -142,7 +157,7 @@ class ClassControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `PATCH /api/v1/classes/{id}/status should update class status`() {
+    fun `update class status should update status`() {
         // Given
         val classId = UUID.randomUUID()
         val request = mapOf("status" to ClassStatus.IN_PROGRESS.name)
@@ -158,4 +173,3 @@ class ClassControllerContractTest @Autowired constructor(
             .andExpect(jsonPath("$.data").exists())
     }
 }
-

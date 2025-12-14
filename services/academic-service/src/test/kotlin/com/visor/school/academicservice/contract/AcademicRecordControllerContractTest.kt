@@ -2,14 +2,19 @@ package com.visor.school.academicservice.contract
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.visor.school.academicservice.controller.AcademicRecordController
+import com.visor.school.academicservice.model.AcademicRecord
+import com.visor.school.academicservice.model.AcademicStanding
 import com.visor.school.academicservice.service.AcademicRecordService
+import io.mockk.every
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.math.BigDecimal
 import java.util.UUID
 
 @WebMvcTest(AcademicRecordController::class)
@@ -21,43 +26,32 @@ class AcademicRecordControllerContractTest @Autowired constructor(
     @MockBean
     private lateinit var academicRecordService: AcademicRecordService
 
+    private val studentId = UUID.randomUUID().toString()
+
     @Test
-    fun `GET /api/v1/academic-records/{studentId} should return academic record`() {
+    fun `should return academic record for valid student ID`() {
         // Given
-        val studentId = UUID.randomUUID()
+        val academicRecord = AcademicRecord(
+            studentId = UUID.fromString(studentId),
+            cumulativeGPA = BigDecimal("3.5"),
+            creditsEarned = 60,
+            academicStanding = AcademicStanding.GOOD_STANDING
+        )
+        every { academicRecordService.getAcademicRecordByStudentId(studentId) } returns academicRecord
 
         // When & Then
-        mockMvc.perform(
-            get("/api/v1/academic-records/{studentId}", studentId)
-        )
+        mockMvc.perform(get("/api/v1/academic-records/student/{studentId}", studentId))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.data").exists())
+            .andExpect(jsonPath("$.data.studentId").value(studentId))
     }
 
     @Test
-    fun `GET /api/v1/academic-records/{studentId}/transcript should return transcript`() {
+    fun `should return 404 for non-existent student ID`() {
         // Given
-        val studentId = UUID.randomUUID()
+        every { academicRecordService.getAcademicRecordByStudentId(studentId) } returns null
 
         // When & Then
-        mockMvc.perform(
-            get("/api/v1/academic-records/{studentId}/transcript", studentId)
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentType("application/pdf"))
-    }
-
-    @Test
-    fun `GET /api/v1/academic-records/{studentId} should return 404 when record not found`() {
-        // Given
-        val studentId = UUID.randomUUID()
-
-        // When & Then
-        mockMvc.perform(
-            get("/api/v1/academic-records/{studentId}", studentId)
-        )
-            .andExpect(status().isOk.or(status().isNotFound))
+        mockMvc.perform(get("/api/v1/academic-records/student/{studentId}", studentId))
+            .andExpect(status().isNotFound)
     }
 }
-

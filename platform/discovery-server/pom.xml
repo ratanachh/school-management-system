@@ -81,6 +81,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.visor.school.discovery.DiscoveryServerApplicationKt</mainClass>
+                    <jvmArguments>
+                        -Dspring.config.import=optional:file:./../../.env[.properties]
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <execution>

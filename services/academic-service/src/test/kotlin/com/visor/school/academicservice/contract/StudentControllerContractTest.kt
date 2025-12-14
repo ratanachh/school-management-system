@@ -2,8 +2,10 @@ package com.visor.school.academicservice.contract
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.visor.school.academicservice.controller.StudentController
+import com.visor.school.academicservice.model.Student
 import com.visor.school.academicservice.model.EnrollmentStatus
 import com.visor.school.academicservice.service.StudentService
+import io.mockk.every
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -25,7 +27,7 @@ class StudentControllerContractTest @Autowired constructor(
     private lateinit var studentService: StudentService
 
     @Test
-    fun `POST /api/v1/students should enroll student and return 201`() {
+    fun `enroll student should return 201`() {
         // Given
         val request = mapOf(
             "userId" to UUID.randomUUID().toString(),
@@ -48,9 +50,10 @@ class StudentControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/students/search should return students by name`() {
+    fun `search students should return students`() {
         // Given
         val searchQuery = "John"
+        every { studentService.searchStudents(searchQuery, 1) } returns emptyList<Student>()
 
         // When & Then
         mockMvc.perform(
@@ -63,9 +66,19 @@ class StudentControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/students/{studentId} should return student`() {
+    fun `get student by id should return student`() {
         // Given
         val studentId = UUID.randomUUID()
+        val mockStudent = Student(
+            userId = UUID.randomUUID().toString(),
+            studentId = "",
+            firstName = "",
+            lastName = "",
+            dateOfBirth = LocalDate.now(),
+            gradeLevel = 0,
+            enrollmentStatus = EnrollmentStatus.ENROLLED
+        )
+        every { studentService.getStudentByStudentId(studentId.toString()) } returns mockStudent
 
         // When & Then
         mockMvc.perform(
@@ -76,7 +89,7 @@ class StudentControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `PUT /api/v1/students/{studentId} should update student and return 200`() {
+    fun `update student should return 200`() {
         // Given
         val studentId = UUID.randomUUID()
         val request = mapOf(
@@ -97,7 +110,7 @@ class StudentControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/students should reject invalid grade level`() {
+    fun `enroll student with invalid grade should reject`() {
         // Given
         val request = mapOf(
             "userId" to UUID.randomUUID().toString(),
@@ -117,9 +130,10 @@ class StudentControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/students/grade/{gradeLevel} should return students by grade`() {
+    fun `get students by grade should return students`() {
         // Given
         val gradeLevel = 5
+        every { studentService.getStudentsByGrade(gradeLevel, 1) } returns emptyList<Student>()
 
         // When & Then
         mockMvc.perform(
@@ -130,4 +144,3 @@ class StudentControllerContractTest @Autowired constructor(
             .andExpect(jsonPath("$.data").isArray)
     }
 }
-

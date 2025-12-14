@@ -58,13 +58,9 @@ data class AcademicRecordUpdatedEvent(
     val cumulativeGPA: BigDecimal,
     val creditsEarned: Int,
     val creditsRequired: Int,
-    val academicStanding: String,
-    override val eventId: UUID = UUID.randomUUID(),
-    override val eventType: String = "AcademicRecordUpdatedEvent",
-    override val timestamp: Instant = Instant.now(),
-    override val version: String = "1.0"
+    val academicStanding: String
 ) : BaseEvent() {
+    override val eventType: String = "AcademicRecordUpdatedEvent"
     override fun getAggregateId(): UUID = studentId
     override fun getAggregateType(): String = "AcademicRecord"
 }
-

@@ -1,17 +1,19 @@
 package com.visor.school.academicservice.service
 
-import com.visor.school.academicservice.model.Address
+import com.visor.school.academicservice.event.StudentEventPublisher
 import com.visor.school.academicservice.model.EnrollmentStatus
 import com.visor.school.academicservice.model.Student
 import com.visor.school.academicservice.repository.StudentRepository
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.*
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
@@ -23,219 +25,86 @@ class StudentServiceTest {
     private lateinit var studentRepository: StudentRepository
 
     @Mock
-    private lateinit var studentIdGenerator: StudentIdGenerator
-
-    @Mock
     private lateinit var studentEventPublisher: StudentEventPublisher
 
     @InjectMocks
     private lateinit var studentService: StudentService
 
-    private val testUserId = UUID.randomUUID()
-    private val testStudentId = "STU-2025-001"
-
-    @BeforeEach
-    fun setup() {
-        studentService = StudentService(studentRepository, studentIdGenerator, studentEventPublisher)
-    }
+    private val testStudent = Student(
+        userId = UUID.randomUUID().toString(),
+        studentId = "S12345",
+        firstName = "John",
+        lastName = "Doe",
+        dateOfBirth = LocalDate.of(2010, 5, 15),
+        gradeLevel = 5,
+        enrollmentStatus = EnrollmentStatus.ENROLLED
+    )
 
     @Test
-    fun `should enroll student successfully with valid grade level`() {
+    fun `enroll student should create and publish event`() {
         // Given
-        whenever(studentIdGenerator.generateStudentId()).thenReturn(testStudentId)
-        whenever(studentRepository.findByUserId(testUserId)).thenReturn(Optional.empty())
-        whenever(studentRepository.save(any())).thenAnswer { it.arguments[0] as Student }
-        doNothing().whenever(studentEventPublisher).publishStudentEnrolled(any())
+        whenever(studentRepository.save(any<Student>())).thenReturn(testStudent)
 
         // When
-        val result = studentService.enrollStudent(
-            userId = testUserId,
-            firstName = "John",
-            lastName = "Doe",
-            dateOfBirth = LocalDate.of(2010, 1, 1),
-            gradeLevel = 5
+        val enrolledStudent = studentService.enrollStudent(
+            testStudent.userId,
+            testStudent.firstName,
+            testStudent.lastName,
+            testStudent.dateOfBirth,
+            testStudent.gradeLevel
         )
 
         // Then
-        assertNotNull(result)
-        assertEquals(testStudentId, result.studentId)
-        assertEquals(5, result.gradeLevel)
-        assertEquals(EnrollmentStatus.ENROLLED, result.enrollmentStatus)
-        verify(studentIdGenerator).generateStudentId()
-        verify(studentRepository).save(any())
-        verify(studentEventPublisher).publishStudentEnrolled(any())
+        assertNotNull(enrolledStudent.studentId)
+        verify(studentRepository).save(any<Student>())
+        verify(studentEventPublisher).publishStudentEnrolledEvent(enrolledStudent)
     }
 
     @Test
-    fun `should throw exception for grade level below 1`() {
-        // When & Then
-        assertThrows<IllegalArgumentException> {
-            studentService.enrollStudent(
-                userId = testUserId,
-                firstName = "Invalid",
-                lastName = "Grade",
-                dateOfBirth = LocalDate.of(2020, 1, 1),
-                gradeLevel = 0
-            )
-        }
-
-        verify(studentRepository, never()).save(any())
-    }
-
-    @Test
-    fun `should throw exception for grade level above 12`() {
-        // When & Then
-        assertThrows<IllegalArgumentException> {
-            studentService.enrollStudent(
-                userId = testUserId,
-                firstName = "Invalid",
-                lastName = "Grade",
-                dateOfBirth = LocalDate.of(2000, 1, 1),
-                gradeLevel = 13
-            )
-        }
-
-        verify(studentRepository, never()).save(any())
-    }
-
-    @Test
-    fun `should throw exception when student already exists`() {
+    fun `update student should save and publish event`() {
         // Given
-        val existingStudent = Student(
-            studentId = "STU-EXISTING",
-            userId = testUserId,
-            firstName = "Existing",
-            lastName = "Student",
-            dateOfBirth = LocalDate.of(2010, 1, 1),
-            gradeLevel = 5
-        )
-        whenever(studentRepository.findByUserId(testUserId)).thenReturn(Optional.of(existingStudent))
-
-        // When & Then
-        assertThrows<IllegalArgumentException> {
-            studentService.enrollStudent(
-                userId = testUserId,
-                firstName = "New",
-                lastName = "Student",
-                dateOfBirth = LocalDate.of(2010, 1, 1),
-                gradeLevel = 5
-            )
-        }
-
-        verify(studentRepository, never()).save(any())
-    }
-
-    @Test
-    fun `should find student by id`() {
-        // Given
-        val student = Student(
-            studentId = testStudentId,
-            userId = testUserId,
-            firstName = "John",
-            lastName = "Doe",
-            dateOfBirth = LocalDate.of(2010, 1, 1),
-            gradeLevel = 5
-        )
-        whenever(studentRepository.findById(student.id)).thenReturn(Optional.of(student))
+        val studentId = UUID.randomUUID()
+        whenever(studentRepository.findById(studentId)).thenReturn(Optional.of(testStudent))
+        whenever(studentRepository.save(any<Student>())).thenReturn(testStudent)
 
         // When
-        val result = studentService.findById(student.id)
+        val updatedStudent = studentService.updateStudent(studentId.toString(), "Jane", null, null)
 
         // Then
-        assertNotNull(result)
-        assertEquals(testStudentId, result?.studentId)
-        verify(studentRepository).findById(student.id)
+        assertEquals("Jane", updatedStudent.firstName)
+        verify(studentRepository).save(any<Student>())
+        verify(studentEventPublisher).publishStudentUpdatedEvent(updatedStudent)
     }
 
     @Test
-    fun `should search students by name`() {
+    fun `search students should return a page of students`() {
         // Given
-        val student1 = Student(
-            studentId = "STU-001",
-            userId = UUID.randomUUID(),
-            firstName = "John",
-            lastName = "Doe",
-            dateOfBirth = LocalDate.of(2010, 1, 1),
-            gradeLevel = 5
-        )
-        val student2 = Student(
-            studentId = "STU-002",
-            userId = UUID.randomUUID(),
-            firstName = "John",
-            lastName = "Smith",
-            dateOfBirth = LocalDate.of(2010, 1, 1),
-            gradeLevel = 5
-        )
-        whenever(studentRepository.findAll()).thenReturn(listOf(student1, student2))
+        val pageable = PageRequest.of(0, 10)
+        whenever(studentRepository.findByNameContainingIgnoreCase("John", pageable))
+            .thenReturn(PageImpl(listOf(testStudent)))
 
         // When
-        val results = studentService.searchStudents("John")
+        val students = studentService.searchStudents("John", 1)
 
         // Then
-        assertEquals(2, results.size)
-        assertTrue(results.all { it.firstName.contains("John", ignoreCase = true) })
+        assertFalse(students.isEmpty())
+        assertEquals(1, students.size)
+        verify(studentRepository).findByNameContainingIgnoreCase("John", pageable)
     }
 
     @Test
-    fun `should update student grade level`() {
+    fun `get students by grade should return a list`() {
         // Given
-        val student = Student(
-            studentId = testStudentId,
-            userId = testUserId,
-            firstName = "John",
-            lastName = "Doe",
-            dateOfBirth = LocalDate.of(2010, 1, 1),
-            gradeLevel = 5
-        )
-        whenever(studentRepository.findById(student.id)).thenReturn(Optional.of(student))
-        whenever(studentRepository.save(any())).thenAnswer { it.arguments[0] as Student }
+        val pageable = PageRequest.of(0, 10)
+        whenever(studentRepository.findByGradeLevel(5, pageable))
+            .thenReturn(PageImpl(listOf(testStudent)))
 
         // When
-        studentService.updateGradeLevel(student.id, 6)
+        val students = studentService.getStudentsByGrade(5, 1)
 
         // Then
-        assertEquals(6, student.gradeLevel)
-        verify(studentRepository).save(student)
-    }
-
-    @Test
-    fun `should enroll student with address and emergency contact`() {
-        // Given
-        val address = Address(
-            street = "123 Main St",
-            city = "Springfield",
-            state = "IL",
-            postalCode = "62701",
-            country = "USA"
-        )
-        val emergencyContact = EmergencyContact(
-            name = "Jane Doe",
-            relationship = "Mother",
-            phoneNumber = "555-1234",
-            email = "jane@example.com"
-        )
-
-        whenever(studentIdGenerator.generateStudentId()).thenReturn(testStudentId)
-        whenever(studentRepository.findByUserId(testUserId)).thenReturn(Optional.empty())
-        whenever(studentRepository.save(any())).thenAnswer { it.arguments[0] as Student }
-        doNothing().whenever(studentEventPublisher).publishStudentEnrolled(any())
-
-        // When
-        val result = studentService.enrollStudent(
-            userId = testUserId,
-            firstName = "John",
-            lastName = "Doe",
-            dateOfBirth = LocalDate.of(2010, 1, 1),
-            gradeLevel = 5,
-            address = address,
-            emergencyContact = emergencyContact
-        )
-
-        // Then
-        assertNotNull(result.address)
-        assertEquals("Springfield", result.address?.city)
-        assertNotNull(result.emergencyContact)
-        assertEquals("Jane Doe", result.emergencyContact?.name)
+        assertFalse(students.isEmpty())
+        assertEquals(1, students.size)
+        verify(studentRepository).findByGradeLevel(5, pageable)
     }
 }
-

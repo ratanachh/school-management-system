@@ -3,6 +3,7 @@ package com.visor.school.academicservice.controller
 import com.visor.school.academicservice.model.AcademicRecord
 import com.visor.school.academicservice.service.AcademicRecordService
 import com.visor.school.common.api.ApiResponse
+import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -43,7 +44,7 @@ class AcademicRecordController(
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_PDF
-        headers.contentDispositionFormData("attachment", "transcript_$studentId.pdf")
+        headers.contentDisposition = ContentDisposition.builder("attachment").filename("transcript_$studentId.pdf").build()
 
         return ResponseEntity.ok()
             .headers(headers)
@@ -122,4 +123,3 @@ data class CourseCompletionResponse(
         }
     }
 }
-

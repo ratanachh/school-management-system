@@ -88,6 +88,7 @@ data class GradeRecordedEvent(
     val eventTimestamp: Instant = Instant.now(),
     val eventVersion: String = "1.0"
 ) : BaseEvent(eventIdOverride, eventTimestamp, eventVersion) {
+    override val eventType: String = "assessment.grade.recorded"
     override fun getAggregateId(): UUID = gradeId
     override fun getAggregateType(): String = "Grade"
 }
@@ -107,7 +108,7 @@ data class GradeUpdatedEvent(
     val eventTimestamp: Instant = Instant.now(),
     val eventVersion: String = "1.0"
 ) : BaseEvent(eventIdOverride, eventTimestamp, eventVersion) {
+    override val eventType: String = "assessment.grade.updated"
     override fun getAggregateId(): UUID = gradeId
     override fun getAggregateType(): String = "Grade"
 }
-

@@ -117,6 +117,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.visor.school.gateway.ApiGatewayApplicationKt</mainClass>
+                    <jvmArguments>
+                        -Dspring.config.import=optional:file:./../../.env[.properties]
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <execution>
