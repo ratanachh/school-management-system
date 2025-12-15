@@ -26,6 +26,9 @@ CREATE DATABASE audit_service;
 -- Create database for Config Server
 CREATE DATABASE config_server;
 
+-- Create database for keycloak Server
+CREATE DATABASE keycloak_server;
+
 -- =============================================================================
 -- Grant permissions to school_user for all databases
 -- =============================================================================
@@ -36,6 +39,7 @@ GRANT ALL PRIVILEGES ON DATABASE academic_assessment_service TO school_user;
 GRANT ALL PRIVILEGES ON DATABASE notification_service TO school_user;
 GRANT ALL PRIVILEGES ON DATABASE audit_service TO school_user;
 GRANT ALL PRIVILEGES ON DATABASE config_server TO school_user;
+GRANT ALL PRIVILEGES ON DATABASE keycloak_server TO school_user;
 
 -- =============================================================================
 -- Connect to each database and grant schema privileges
@@ -71,6 +75,12 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO school_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO school_user;
 
 \c config_server
+GRANT ALL ON SCHEMA public TO school_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO school_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO school_user;
+
+
+\c keycloak_server
 GRANT ALL ON SCHEMA public TO school_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO school_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO school_user;
