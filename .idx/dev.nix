@@ -8,8 +8,14 @@
     pkgs.maven
     pkgs.jdk25_headless
     pkgs.htop
+    pkgs.inetutils
   ];
   services.docker.enable = true;
+  # to change directory oof docker available storage.
+  # cat /home/user/.config/docker/daemon.json 
+  # {
+  #   "data-root": "/run/dockers"
+  # }
   # Sets environment variables in the workspace
   env = { };
   idx = {

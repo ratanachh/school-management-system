@@ -73,9 +73,12 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_server
       KC_DB_USERNAME: school_user
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
-      KC_HTTP_RELATIVE_PATH: ${KEYCLOAK_RELATIVE_PATH}
-      KC_PROXY: edge
+      # configure with hostname
+      KC_HOSTNAME_URL: ${KEYCLOAK_URL}
+      # configure with relative
+      #KC_HTTP_RELATIVE_PATH: ${KEYCLOAK_RELATIVE_PATH}
+      #KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      #KC_PROXY: edge
       KC_HOSTNAME_STRICT: "false"
       KC_PROXY_HEADERS: "xforwarded"
       KC_HEALTH_ENABLED: "true"
@@ -93,26 +96,26 @@ services:
       - school-network
       - school_net
 
-  # # MinIO RELEASE.2025-09-07T16-13-09Z - Object storage for files
-  # minio:
-  #   image: minio/minio:RELEASE.2025-09-07T16-13-09Z
-  #   container_name: school-minio
-  #   command: server /data --console-address ":9001"
-  #   environment:
-  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
-  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-  #   ports:
-  #     - "5000:9000"  # API
-  #     - "5001:9001"  # Console
-  #   volumes:
-  #     - minio_data:/data
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #   networks:
-  #     - school-network
+  # MinIO RELEASE.2025-09-07T16-13-09Z - Object storage for files
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    container_name: school-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "5000:9000"  # API
+      - "5001:9001"  # Console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - school-network
 
 volumes:
   postgres_data:
