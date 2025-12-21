@@ -1,17 +1,18 @@
 package com.visor.school.userservice.service
 
+import com.visor.school.userservice.dto.LoginResponse
+import com.visor.school.userservice.event.UserEventPublisher
 import com.visor.school.userservice.integration.KeycloakClient
 import com.visor.school.userservice.integration.KeycloakException
 import com.visor.school.userservice.integration.UserAlreadyExistsException
-import com.visor.school.userservice.event.UserEventPublisher
 import com.visor.school.userservice.model.AccountStatus
 import com.visor.school.userservice.model.User
 import com.visor.school.userservice.model.UserRole
 import com.visor.school.userservice.repository.UserRepository
+import java.util.UUID
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 /**
  * User service with Keycloak integration
@@ -69,7 +70,7 @@ class UserService(
 
             // Step 2: Assign role in Keycloak (using admin client for permissions)
             keycloakClient.assignRealmRoleAsAdmin(keycloakId, role.name)
-            logger.info("Role ${role.name} assigned to Keycloak user: $keycloakId")
+            logger.info("Role \${role.name} assigned to Keycloak user: $keycloakId")
 
             // Step 3: Create User entity with keycloakId
             val user = User(
@@ -84,7 +85,7 @@ class UserService(
             )
 
             val saved = userRepository.save(user)
-            logger.info("User created successfully: ${saved.id} (Keycloak ID: $keycloakId)")
+            logger.info("User created successfully: \${saved.id} (Keycloak ID: $keycloakId)")
 
             // Publish user created event
             eventPublisher.publishUserCreated(saved)
@@ -95,7 +96,7 @@ class UserService(
             throw IllegalArgumentException("User with email $email already exists!", e)
         } catch (e: KeycloakException) {
             logger.error("Keycloak error while creating user: $email", e)
-            throw RuntimeException("Failed to create user: ${e.message}", e)
+            throw RuntimeException("Failed to create user: \${e.message}", e)
         }
     }
 
@@ -150,7 +151,7 @@ class UserService(
             )
 
             val saved = userRepository.save(user)
-            logger.info("System user created successfully: ${saved.id} (Keycloak ID: $keycloakId)")
+            logger.info("System user created successfully: \${saved.id} (Keycloak ID: $keycloakId)")
 
             // Publish user created event
             eventPublisher.publishUserCreated(saved)
@@ -187,7 +188,7 @@ class UserService(
                 )
 
                 val saved = userRepository.save(user)
-                logger.info("System user synced from Keycloak: ${saved.id} (Keycloak ID: ${keycloakUser.id})")
+                logger.info("System user synced from Keycloak: \${saved.id} (Keycloak ID: \${keycloakUser.id})")
 
                 // Publish user created event
                 eventPublisher.publishUserCreated(saved)
@@ -195,11 +196,11 @@ class UserService(
                 return saved
             } catch (syncError: Exception) {
                 logger.error("Failed to sync user from Keycloak: $email", syncError)
-                throw IllegalArgumentException("User exists in Keycloak but failed to sync to local database: ${syncError.message}", syncError)
+                throw IllegalArgumentException("User exists in Keycloak but failed to sync to local database: \${syncError.message}", syncError)
             }
         } catch (e: KeycloakException) {
             logger.error("Keycloak error while creating system user: $email", e)
-            throw RuntimeException("Failed to create user in Keycloak: ${e.message}", e)
+            throw RuntimeException("Failed to create user in Keycloak: \${e.message}", e)
         }
     }
 
@@ -244,7 +245,7 @@ class UserService(
         // Authorization check: Only SUPER_ADMIN can update ADMINISTRATOR or SUPER_ADMIN users
         if (user.role == UserRole.ADMINISTRATOR || user.role == UserRole.SUPER_ADMIN) {
             if (!securityContextService.canManageAdministrators()) {
-                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can update ${user.role} users")
+                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can update \${user.role} users")
             }
         }
 
@@ -300,7 +301,7 @@ class UserService(
         // Authorization check: Only SUPER_ADMIN can update ADMINISTRATOR or SUPER_ADMIN account status
         if (user.role == UserRole.ADMINISTRATOR || user.role == UserRole.SUPER_ADMIN) {
             if (!securityContextService.canManageAdministrators()) {
-                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can update ${user.role} account status")
+                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can update \${user.role} account status")
             }
         }
 
@@ -390,8 +391,15 @@ class UserService(
      * Authenticate user with Keycloak
      * @return LoginResponse with access token and refresh token
      */
-    fun authenticateUser(email: String, password: String): com.visor.school.userservice.dto.LoginResponse {
+    fun authenticateUser(email: String, password: String): LoginResponse {
         return keycloakClient.authenticateUser(email, password)
     }
-}
 
+    fun refreshToken(refreshToken: String): LoginResponse {
+        return keycloakClient.refreshToken(refreshToken)
+    }
+
+    fun getMe(): User? {
+        return securityContextService.getCurrentUser()
+    }
+}

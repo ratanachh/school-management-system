@@ -1,21 +1,21 @@
 package com.visor.school.userservice.integration
 
+import com.visor.school.userservice.dto.LoginResponse
+import jakarta.ws.rs.core.Response
+import java.util.UUID
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
-import org.springframework.web.client.RestTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.stereotype.Component
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
-import com.visor.school.userservice.dto.LoginResponse
-import java.util.UUID
-import jakarta.ws.rs.core.Response
+import org.springframework.web.client.RestTemplate
 
 /**
  * Keycloak Admin API client for user management
@@ -132,7 +132,7 @@ class KeycloakClient(
             // Keycloak expects Map<String, List<String>> for attributes
             if (attributes.isNotEmpty()) {
                 this.attributes = attributes.mapValues { listOf(it.value) }.toMutableMap()
-                logger.info("Setting user attributes: ${attributes.keys}")
+                logger.info("Setting user attributes: \${attributes.keys}")
             }
         }
 
@@ -149,7 +149,7 @@ class KeycloakClient(
                 userId
             }
             409 -> throw UserAlreadyExistsException("User with email $email already exists in Keycloak")
-            else -> throw KeycloakException("Failed to create user in Keycloak: ${response.statusInfo.reasonPhrase}")
+            else -> throw KeycloakException("Failed to create user in Keycloak: \${response.statusInfo.reasonPhrase}")
         }
     }
 
@@ -217,7 +217,7 @@ class KeycloakClient(
             logger.info("User updated in Keycloak: $keycloakId")
         } catch (e: Exception) {
             logger.error("Failed to update user in Keycloak: $keycloakId", e)
-            throw KeycloakException("Failed to update user in Keycloak: ${e.message}", e)
+            throw KeycloakException("Failed to update user in Keycloak: \${e.message}", e)
         }
     }
 
@@ -251,15 +251,15 @@ class KeycloakClient(
      * Internal method to assign realm role with specified Keycloak client
      */
     private fun assignRealmRoleInternal(keycloakClient: Keycloak, keycloakId: String, roleName: String) {
-        logger.info("Assigning realm role '$roleName' to Keycloak user: $keycloakId")
+        logger.info("Assigning realm role \'$roleName\' to Keycloak user: $keycloakId")
         try {
             val userResource = keycloakClient.realm(realm).users().get(keycloakId)
             val role = keycloakClient.realm(realm).roles().get(roleName).toRepresentation()
             userResource.roles().realmLevel().add(listOf(role))
-            logger.info("Realm role '$roleName' assigned to user: $keycloakId")
+            logger.info("Realm role \'$roleName\' assigned to user: $keycloakId")
         } catch (e: Exception) {
-            logger.error("Failed to assign realm role '$roleName' to user: $keycloakId", e)
-            throw KeycloakException("Failed to assign realm role: ${e.message}", e)
+            logger.error("Failed to assign realm role \'$roleName\' to user: $keycloakId", e)
+            throw KeycloakException("Failed to assign realm role: \${e.message}", e)
         }
     }
 
@@ -309,8 +309,44 @@ class KeycloakClient(
             logger.error("Failed to authenticate user: $errorMessage", e)
             throw KeycloakException(errorMessage, e)
         } catch (e: Exception) {
-            logger.error("Failed to authenticate user: ${e.message}", e)
-            throw KeycloakException("Authentication failed: ${e.message}", e)
+            logger.error("Failed to authenticate user: \${e.message}", e)
+            throw KeycloakException("Authentication failed: \${e.message}", e)
+        }
+    }
+
+    fun refreshToken(refreshToken: String): LoginResponse {
+        val tokenUrl = "$serverUrl/realms/$realm/protocol/openid-connect/token"
+
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+
+        val body: MultiValueMap<String, String> = LinkedMultiValueMap()
+        body.add("grant_type", "refresh_token")
+        body.add("client_id", serviceClientId)
+        body.add("client_secret", serviceClientSecret)
+        body.add("refresh_token", refreshToken)
+
+        val request = HttpEntity(body, headers)
+        val restTemplate = RestTemplate()
+
+        try {
+            val response = restTemplate.postForEntity(tokenUrl, request, Map::class.java)
+            val responseBody = response.body ?: throw KeycloakException("Failed to refresh token: empty response")
+
+            return LoginResponse(
+                accessToken = responseBody["access_token"] as String,
+                refreshToken = responseBody["refresh_token"] as String,
+                expiresIn = responseBody["expires_in"] as Int,
+                refreshExpiresIn = responseBody["refresh_expires_in"] as Int,
+                tokenType = (responseBody["token_type"] as? String) ?: "Bearer"
+            )
+        } catch (e: org.springframework.web.client.HttpClientErrorException) {
+            val errorMessage = extractErrorMessageFromResponse(e) ?: "Token refresh failed"
+            logger.error("Failed to refresh token: $errorMessage", e)
+            throw KeycloakException(errorMessage, e)
+        } catch (e: Exception) {
+            logger.error("Failed to refresh token: \${e.message}", e)
+            throw KeycloakException("Token refresh failed: \${e.message}", e)
         }
     }
 
@@ -333,7 +369,7 @@ class KeycloakClient(
                 null
             }
         } catch (e: Exception) {
-            logger.debug("Could not parse error response body: ${e.message}")
+            logger.debug("Could not parse error response body: \${e.message}")
             null
         }
     }
@@ -341,4 +377,3 @@ class KeycloakClient(
 
 class KeycloakException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
 class UserAlreadyExistsException(message: String) : RuntimeException(message)
-

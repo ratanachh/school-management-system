@@ -4,6 +4,7 @@ import com.visor.school.common.api.ApiResponse
 import com.visor.school.userservice.dto.LoginRequest
 import com.visor.school.userservice.dto.LoginResponse
 import com.visor.school.userservice.dto.PasswordResetRequest
+import com.visor.school.userservice.dto.RefreshTokenRequest
 import com.visor.school.userservice.dto.RegisterRequest
 import com.visor.school.userservice.dto.UserResponse
 import com.visor.school.userservice.dto.VerifyEmailRequest
@@ -14,7 +15,11 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 /**
  * Authentication controller
@@ -123,5 +128,29 @@ class AuthController(
             )
         )
     }
-}
 
+    @PostMapping("/refresh-token")
+    fun refreshToken(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<ApiResponse<LoginResponse>> {
+        val loginResponse = userService.refreshToken(request.refreshToken)
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                loginResponse,
+                "Token refreshed successfully"
+            )
+        )
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    fun getMe(): ResponseEntity<ApiResponse<UserResponse>> {
+        val user = userService.getMe()
+            ?: throw IllegalStateException("User not found")
+
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                UserResponse.from(user),
+                "User profile retrieved successfully"
+            )
+        )
+    }
+}
