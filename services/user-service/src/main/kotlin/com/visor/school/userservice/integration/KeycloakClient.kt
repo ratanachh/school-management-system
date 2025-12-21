@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.RestClientException
+import org.springframework.web.client.HttpServerErrorException
 
 /**
  * Keycloak Admin API client for user management
@@ -32,6 +34,14 @@ class KeycloakClient(
     @Value("\${keycloak.admin-client-id}") private val adminClientId: String
 ) {
     private val logger = LoggerFactory.getLogger(KeycloakClient::class.java)
+    
+    // Use a shared RestTemplate instance for better resource management
+    // In production, consider injecting a configured RestTemplate bean with timeout settings
+    private val restTemplate: RestTemplate by lazy { RestTemplate() }
+    
+    companion object {
+        private const val MIN_REFRESH_TOKEN_LENGTH = 10 // Basic validation
+    }
 
     // Service account client for regular operations
     private val keycloak: Keycloak by lazy {
@@ -291,30 +301,80 @@ class KeycloakClient(
         body.add("password", password)
 
         val request = HttpEntity(body, headers)
-        val restTemplate = RestTemplate()
         
         try {
             val response = restTemplate.postForEntity(tokenUrl, request, Map::class.java)
             val responseBody = response.body ?: throw KeycloakException("Failed to authenticate: empty response")
 
+            // Safe extraction with proper error handling
+            val accessToken = responseBody["access_token"] as? String
+                ?: throw KeycloakException("Failed to authenticate: access_token not found in response")
+            
+            val refreshToken = responseBody["refresh_token"] as? String
+                ?: throw KeycloakException("Failed to authenticate: refresh_token not found in response")
+            
+            val expiresIn = when (val expiresInValue = responseBody["expires_in"]) {
+                is Int -> expiresInValue
+                is Number -> expiresInValue.toInt()
+                is String -> expiresInValue.toIntOrNull()
+                    ?: throw KeycloakException("Failed to authenticate: invalid expires_in format")
+                else -> throw KeycloakException("Failed to authenticate: expires_in not found or invalid")
+            }
+            
+            val refreshExpiresIn = when (val refreshExpiresInValue = responseBody["refresh_expires_in"]) {
+                is Int -> refreshExpiresInValue
+                is Number -> refreshExpiresInValue.toInt()
+                is String -> refreshExpiresInValue.toIntOrNull() ?: expiresIn
+                null -> expiresIn
+                else -> expiresIn
+            }
+
             return LoginResponse(
-                accessToken = responseBody["access_token"] as String,
-                refreshToken = responseBody["refresh_token"] as String,
-                expiresIn = responseBody["expires_in"] as Int,
-                refreshExpiresIn = responseBody["refresh_expires_in"] as Int,
+                accessToken = accessToken,
+                refreshToken = refreshToken,
+                expiresIn = expiresIn,
+                refreshExpiresIn = refreshExpiresIn,
                 tokenType = (responseBody["token_type"] as? String) ?: "Bearer"
             )
+        } catch (e: HttpServerErrorException) {
+            // Handle 5xx server errors from Keycloak
+            val errorMessage = extractErrorMessageFromResponse(e) ?: "Authentication server error"
+            val statusCode = e.statusCode.value()
+            
+            logger.error("Keycloak server error while authenticating user: $errorMessage (HTTP $statusCode)", e)
+            throw KeycloakException("Authentication server is temporarily unavailable. Please try again later.", e)
         } catch (e: org.springframework.web.client.HttpClientErrorException) {
             val errorMessage = extractErrorMessageFromResponse(e) ?: "Authentication failed"
-            logger.error("Failed to authenticate user: $errorMessage", e)
+            // Don't log email/password in error messages
+            logger.error("Failed to authenticate user: $errorMessage")
             throw KeycloakException(errorMessage, e)
+        } catch (e: RestClientException) {
+            // Handle network errors (connection failures, timeouts, etc.)
+            logger.error("Network error while authenticating user: ${e.message}", e)
+            throw KeycloakException("Failed to connect to authentication server", e)
         } catch (e: Exception) {
-            logger.error("Failed to authenticate user: \${e.message}", e)
-            throw KeycloakException("Authentication failed: \${e.message}", e)
+            logger.error("Failed to authenticate user: ${e.javaClass.simpleName}")
+            throw KeycloakException("Authentication failed: ${e.message}", e)
         }
     }
 
+    /**
+     * Refresh access token using a refresh token.
+     * 
+     * @param refreshToken The refresh token to use for obtaining new access token
+     * @return LoginResponse with new access token and refresh token (reuses original if rotation disabled)
+     * @throws KeycloakException if token refresh fails
+     * @throws IllegalArgumentException if refresh token is invalid format
+     */
     fun refreshToken(refreshToken: String): LoginResponse {
+        // Input validation
+        if (refreshToken.isBlank()) {
+            throw IllegalArgumentException("Refresh token cannot be blank")
+        }
+        if (refreshToken.length < MIN_REFRESH_TOKEN_LENGTH) {
+            throw IllegalArgumentException("Invalid refresh token format")
+        }
+        
         val tokenUrl = "$serverUrl/realms/$realm/protocol/openid-connect/token"
 
         val headers = HttpHeaders()
@@ -327,26 +387,78 @@ class KeycloakClient(
         body.add("refresh_token", refreshToken)
 
         val request = HttpEntity(body, headers)
-        val restTemplate = RestTemplate()
 
         try {
             val response = restTemplate.postForEntity(tokenUrl, request, Map::class.java)
             val responseBody = response.body ?: throw KeycloakException("Failed to refresh token: empty response")
 
+            // Safe extraction with proper error handling
+            val accessToken = responseBody["access_token"] as? String
+                ?: throw KeycloakException("Failed to refresh token: access_token not found in response")
+            
+            // Handle refresh token rotation: Keycloak may or may not return a new refresh token
+            // If rotation is disabled, Keycloak won't return refresh_token, so we reuse the original
+            val newRefreshToken = (responseBody["refresh_token"] as? String) ?: refreshToken
+            
+            // Safe extraction of expires_in (required)
+            val expiresIn = when (val expiresInValue = responseBody["expires_in"]) {
+                is Int -> expiresInValue
+                is Number -> expiresInValue.toInt()
+                is String -> expiresInValue.toIntOrNull()
+                    ?: throw KeycloakException("Failed to refresh token: invalid expires_in format")
+                else -> throw KeycloakException("Failed to refresh token: expires_in not found or invalid")
+            }
+            
+            // Safe extraction of refresh_expires_in (optional)
+            val refreshExpiresIn = when (val refreshExpiresInValue = responseBody["refresh_expires_in"]) {
+                is Int -> refreshExpiresInValue
+                is Number -> refreshExpiresInValue.toInt()
+                is String -> refreshExpiresInValue.toIntOrNull() ?: expiresIn
+                null -> expiresIn // Fallback to access token expiry if not provided
+                else -> expiresIn
+            }
+
+            logger.debug("Token refreshed successfully for client: $serviceClientId")
+            
             return LoginResponse(
-                accessToken = responseBody["access_token"] as String,
-                refreshToken = responseBody["refresh_token"] as String,
-                expiresIn = responseBody["expires_in"] as Int,
-                refreshExpiresIn = responseBody["refresh_expires_in"] as Int,
+                accessToken = accessToken,
+                refreshToken = newRefreshToken,
+                expiresIn = expiresIn,
+                refreshExpiresIn = refreshExpiresIn,
                 tokenType = (responseBody["token_type"] as? String) ?: "Bearer"
             )
+        } catch (e: HttpServerErrorException) {
+            // Handle 5xx server errors from Keycloak
+            val errorMessage = extractErrorMessageFromResponse(e) ?: "Authentication server error"
+            val statusCode = e.statusCode.value()
+            
+            logger.error("Keycloak server error while refreshing token: $errorMessage (HTTP $statusCode)", e)
+            throw KeycloakException("Authentication server is temporarily unavailable. Please try again later.", e)
         } catch (e: org.springframework.web.client.HttpClientErrorException) {
+            // Extract error message without logging sensitive token data
             val errorMessage = extractErrorMessageFromResponse(e) ?: "Token refresh failed"
-            logger.error("Failed to refresh token: $errorMessage", e)
-            throw KeycloakException(errorMessage, e)
+            val statusCode = e.statusCode.value()
+            
+            // Log error without sensitive token information
+            logger.error("Failed to refresh token: $errorMessage (HTTP $statusCode)")
+            
+            // Map common Keycloak errors to more user-friendly messages
+            when (statusCode) {
+                400 -> throw KeycloakException("Invalid refresh token", e)
+                401 -> throw KeycloakException("Authentication failed", e)
+                403 -> throw KeycloakException("Access denied", e)
+                else -> throw KeycloakException(errorMessage, e)
+            }
+        } catch (e: RestClientException) {
+            // Handle network errors (connection failures, timeouts, etc.)
+            logger.error("Network error while refreshing token: ${e.message}", e)
+            throw KeycloakException("Failed to connect to authentication server", e)
+        } catch (e: KeycloakException) {
+            // Re-throw Keycloak exceptions as-is
+            throw e
         } catch (e: Exception) {
-            logger.error("Failed to refresh token: \${e.message}", e)
-            throw KeycloakException("Token refresh failed: \${e.message}", e)
+            logger.error("Unexpected error while refreshing token: ${e.javaClass.simpleName}", e)
+            throw KeycloakException("Token refresh failed: ${e.message}", e)
         }
     }
 
@@ -354,7 +466,7 @@ class KeycloakClient(
      * Extract error message from Keycloak error response
      * Keycloak returns errors in JSON format with 'error' and 'error_description' fields
      */
-    private fun extractErrorMessageFromResponse(exception: org.springframework.web.client.HttpClientErrorException): String? {
+    private fun extractErrorMessageFromResponse(exception: org.springframework.web.client.HttpStatusCodeException): String? {
         return try {
             val responseBody = exception.responseBodyAsString
             if (responseBody.isNotBlank()) {

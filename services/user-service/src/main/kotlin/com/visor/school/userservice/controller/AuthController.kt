@@ -129,6 +129,10 @@ class AuthController(
         )
     }
 
+    /**
+     * Refresh access token using a refresh token.
+     * Returns a new access token and optionally a new refresh token if rotation is enabled.
+     */
     @PostMapping("/refresh-token")
     fun refreshToken(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<ApiResponse<LoginResponse>> {
         val loginResponse = userService.refreshToken(request.refreshToken)

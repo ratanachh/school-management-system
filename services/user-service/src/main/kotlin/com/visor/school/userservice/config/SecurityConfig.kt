@@ -55,6 +55,7 @@ class SecurityConfig(
                         "/v1/auth/verify-email",
                         "/v1/auth/login",
                         "/v1/auth/reset-password",
+                        "/v1/auth/refresh-token",
                         "/swagger-ui/**",
                         "/v3/api-docs/**"
                     ).permitAll()
