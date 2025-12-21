@@ -18,10 +18,6 @@
     <name>User Service</name>
     <description>User management service with Keycloak integration</description>
 
-    <properties>
-        <kotlin.version>2.2.0</kotlin.version>
-    </properties>
-
     <dependencies>
         <!-- Spring Boot Web -->
         <dependency>

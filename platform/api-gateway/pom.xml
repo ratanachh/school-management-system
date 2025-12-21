@@ -18,10 +18,6 @@
     <name>API Gateway</name>
     <description>Spring Cloud Gateway for API routing and load balancing</description>
 
-    <properties>
-        <kotlin.version>2.2.0</kotlin.version>
-    </properties>
-
     <dependencies>
         <!-- Spring Cloud Gateway -->
         <dependency>

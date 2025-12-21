@@ -18,10 +18,6 @@
     <name>Discovery Server</name>
     <description>Eureka Discovery Server for service registration and discovery</description>
 
-    <properties>
-        <kotlin.version>2.2.0</kotlin.version>
-    </properties>
-
     <dependencies>
         <!-- Spring Cloud Netflix Eureka Server -->
         <dependency>

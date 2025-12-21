@@ -18,10 +18,6 @@
     <name>Config Server</name>
     <description>Spring Cloud Config Server for centralized configuration management</description>
 
-    <properties>
-        <kotlin.version>2.2.0</kotlin.version>
-    </properties>
-
     <dependencies>
         <!-- Spring Cloud Config Server -->
         <dependency>
@@ -90,7 +86,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.visor.school.configserver.ConfigServerApplicationKt</mainClass>
                     <jvmArguments>
                         -Dspring.config.import=optional:file:./../../.env[.properties]
                     </jvmArguments>

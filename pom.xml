@@ -15,7 +15,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <kotlin.version>2.2.21</kotlin.version>
+        <kotlin.version>2.3.0</kotlin.version>
         <spring-boot.version>3.5.7</spring-boot.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <junit.version>5.11.0</junit.version>
@@ -36,12 +36,12 @@
         <module>shared/keycloak-initializer-core</module>
         <module>services/common</module>
         <module>services/user-service</module>
-        <module>services/academic-service</module>
+        <!-- <module>services/academic-service</module>
         <module>services/attendance-service</module>
         <module>services/academic-assessment-service</module>
         <module>services/search-service</module>
         <module>services/audit-service</module>
-        <module>services/notification-service</module>
+        <module>services/notification-service</module> -->
     </modules>
 
     <dependencyManagement>

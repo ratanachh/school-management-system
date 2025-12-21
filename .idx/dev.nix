@@ -6,7 +6,7 @@
   # Use https://search.nixos.org/packages to find packages
   packages = [ 
     pkgs.maven
-    pkgs.jdk25_headless
+    pkgs.jdk25
     pkgs.htop
     pkgs.inetutils
   ];

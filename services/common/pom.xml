@@ -18,10 +18,6 @@
     <name>Common Library</name>
     <description>Shared event schemas for RabbitMQ event-driven communication</description>
 
-    <properties>
-        <kotlin.version>2.2.0</kotlin.version>
-    </properties>
-
     <dependencies>
         <!-- Spring Boot Starter Web (for RestControllerAdvice, ResponseEntity, HttpStatus, WebRequest) -->
         <dependency>
