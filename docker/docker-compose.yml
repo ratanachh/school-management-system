@@ -4,7 +4,7 @@ services:
     image: postgres:17
     container_name: school-postgres
     environment:
-      POSTGRES_DB: schoowl_management
+      POSTGRES_DB: school_management
       POSTGRES_USER: school_user
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:

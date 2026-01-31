@@ -101,7 +101,7 @@ while [ $INIT_COUNT -lt $INIT_TIMEOUT ]; do
                 -H "Authorization: Bearer ${ACCESS_TOKEN}" \
                 -H "Content-Type: application/json" || echo "")
             
-            if echo "$CLIENTS_RESPONSE" | grep -q "user-profile" || echo "$CLIENTS_RESPONSE" | grep -q "${KEYCLOAK_SERVICE_CLIENT_ID:-user-profile}"; then
+            if echo "$CLIENTS_RESPONSE" | grep -q "user-profile" || echo "$CLIENTS_RESPONSE" | grep -q "${USER_PROFILE_CLIENT_ID:-user-profile}"; then
                 REALM_READY=true
                 break
             fi

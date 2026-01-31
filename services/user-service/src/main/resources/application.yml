@@ -41,11 +41,11 @@ keycloak:
           access-token-lifespan: "300"
           client-session-idle-timeout: "1800"
           client-session-max-lifespan: "36000"
-      - client-id: ${KEYCLOAK_SERVICE_CLIENT_ID}
+      - client-id: ${USER_PROFILE_CLIENT_ID}
         protocol: openid-connect
         public-client: false
         service-accounts-enabled: true
-        secret: ${KEYCLOAK_SERVICE_CLIENT_SECRET}
+        secret: ${USER_PROFILE_CLIENT_SECRET}
         redirect-uris: []
         web-origins: []
         attributes:

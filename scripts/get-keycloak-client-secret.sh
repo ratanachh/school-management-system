@@ -26,7 +26,7 @@ KEYCLOAK_ADMIN="${KEYCLOAK_ADMIN:-admin}"
 KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-}"
 KEYCLOAK_ADMIN_CLIENT_ID="${KEYCLOAK_ADMIN_CLIENT_ID:-admin-cli}"
 KEYCLOAK_REALM="${KEYCLOAK_REALM:-school-management}"
-KEYCLOAK_SERVICE_CLIENT_ID="${KEYCLOAK_SERVICE_CLIENT_ID:-user-profile}"
+USER_PROFILE_CLIENT_ID="${USER_PROFILE_CLIENT_ID:-user-profile}"
 
 # Validate required variables
 if [ -z "$KEYCLOAK_ADMIN_PASSWORD" ]; then
@@ -74,7 +74,7 @@ fi
 echo -e "${GREEN}Admin token obtained${NC}"
 
 # Get realm clients
-echo -e "${YELLOW}Finding client '${KEYCLOAK_SERVICE_CLIENT_ID}' in realm '${KEYCLOAK_REALM}'...${NC}"
+echo -e "${YELLOW}Finding client '${USER_PROFILE_CLIENT_ID}' in realm '${KEYCLOAK_REALM}'...${NC}"
 CLIENTS_RESPONSE=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/clients" \
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     -H "Content-Type: application/json")
@@ -89,21 +89,21 @@ fi
 # Find the client by clientId and extract its UUID
 # Try using jq if available (most reliable)
 if command -v jq > /dev/null 2>&1; then
-    CLIENT_UUID=$(echo "$CLIENTS_RESPONSE" | jq -r ".[] | select(.clientId == \"${KEYCLOAK_SERVICE_CLIENT_ID}\") | .id" 2>/dev/null || echo "")
+    CLIENT_UUID=$(echo "$CLIENTS_RESPONSE" | jq -r ".[] | select(.clientId == \"${USER_PROFILE_CLIENT_ID}\") | .id" 2>/dev/null || echo "")
 fi
 
 # Fallback: use grep to find client block and extract UUID
 if [ -z "$CLIENT_UUID" ]; then
     # Find the JSON object containing our clientId
     # Look backwards from clientId to find the id field in the same object
-    CLIENT_BLOCK=$(echo "$CLIENTS_RESPONSE" | grep -B50 "\"clientId\":\"${KEYCLOAK_SERVICE_CLIENT_ID}\"" | grep "\"id\":" | tail -1)
+    CLIENT_BLOCK=$(echo "$CLIENTS_RESPONSE" | grep -B50 "\"clientId\":\"${USER_PROFILE_CLIENT_ID}\"" | grep "\"id\":" | tail -1)
     if [ -n "$CLIENT_BLOCK" ]; then
         CLIENT_UUID=$(echo "$CLIENT_BLOCK" | grep -o "\"id\":\"[^\"]*" | cut -d'"' -f4)
     fi
 fi
 
 if [ -z "$CLIENT_UUID" ]; then
-    echo -e "${RED}Error: Client '${KEYCLOAK_SERVICE_CLIENT_ID}' not found in realm '${KEYCLOAK_REALM}'${NC}"
+    echo -e "${RED}Error: Client '${USER_PROFILE_CLIENT_ID}' not found in realm '${KEYCLOAK_REALM}'${NC}"
     echo "Available clients:"
     echo "$CLIENTS_RESPONSE" | grep -o "\"clientId\":\"[^\"]*" | cut -d'"' -f4 | sed 's/^/  - /'
     exit 1
@@ -131,31 +131,31 @@ echo -e "${GREEN}Client secret retrieved successfully${NC}"
 echo -e "${YELLOW}Updating .env file...${NC}"
 ENV_FILE=".env"
 
-# Check if KEYCLOAK_SERVICE_CLIENT_SECRET already exists in .env
-if grep -q "^KEYCLOAK_SERVICE_CLIENT_SECRET=" "$ENV_FILE"; then
+# Check if USER_PROFILE_CLIENT_ID already exists in .env
+if grep -q "^USER_PROFILE_CLIENT_ID=" "$ENV_FILE"; then
     # Update existing entry
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
-        sed -i '' "s|^KEYCLOAK_SERVICE_CLIENT_SECRET=.*|KEYCLOAK_SERVICE_CLIENT_SECRET=${CLIENT_SECRET}|" "$ENV_FILE"
+        sed -i '' "s|^USER_PROFILE_CLIENT_ID=.*|USER_PROFILE_CLIENT_ID=${CLIENT_SECRET}|" "$ENV_FILE"
     else
         # Linux
-        sed -i "s|^KEYCLOAK_SERVICE_CLIENT_SECRET=.*|KEYCLOAK_SERVICE_CLIENT_SECRET=${CLIENT_SECRET}|" "$ENV_FILE"
+        sed -i "s|^USER_PROFILE_CLIENT_ID=.*|USER_PROFILE_CLIENT_ID=${CLIENT_SECRET}|" "$ENV_FILE"
     fi
 else
     # Append new entry
-    echo "KEYCLOAK_SERVICE_CLIENT_SECRET=${CLIENT_SECRET}" >> "$ENV_FILE"
+    echo "USER_PROFILE_CLIENT_ID=${CLIENT_SECRET}" >> "$ENV_FILE"
 fi
 
 # Also update docker/.env if it exists
 if [ -f "docker/.env" ]; then
-    if grep -q "^KEYCLOAK_SERVICE_CLIENT_SECRET=" "docker/.env"; then
+    if grep -q "^USER_PROFILE_CLIENT_ID=" "docker/.env"; then
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s|^KEYCLOAK_SERVICE_CLIENT_SECRET=.*|KEYCLOAK_SERVICE_CLIENT_SECRET=${CLIENT_SECRET}|" "docker/.env"
+            sed -i '' "s|^USER_PROFILE_CLIENT_ID=.*|USER_PROFILE_CLIENT_ID=${CLIENT_SECRET}|" "docker/.env"
         else
-            sed -i "s|^KEYCLOAK_SERVICE_CLIENT_SECRET=.*|KEYCLOAK_SERVICE_CLIENT_SECRET=${CLIENT_SECRET}|" "docker/.env"
+            sed -i "s|^USER_PROFILE_CLIENT_ID=.*|USER_PROFILE_CLIENT_ID=${CLIENT_SECRET}|" "docker/.env"
         fi
     else
-        echo "KEYCLOAK_SERVICE_CLIENT_SECRET=${CLIENT_SECRET}" >> "docker/.env"
+        echo "USER_PROFILE_CLIENT_ID=${CLIENT_SECRET}" >> "docker/.env"
     fi
     echo -e "${GREEN}Updated docker/.env file${NC}"
 fi
@@ -163,6 +163,6 @@ fi
 echo -e "${GREEN}======================================${NC}"
 echo -e "${GREEN}Client secret updated successfully!${NC}"
 echo -e "${GREEN}======================================${NC}"
-echo -e "${BLUE}Client ID: ${KEYCLOAK_SERVICE_CLIENT_ID}${NC}"
+echo -e "${BLUE}Client ID: ${USER_PROFILE_CLIENT_ID}${NC}"
 echo -e "${BLUE}Secret updated in .env file${NC}"
 
