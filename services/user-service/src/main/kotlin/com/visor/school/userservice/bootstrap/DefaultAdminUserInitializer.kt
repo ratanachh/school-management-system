@@ -39,7 +39,7 @@ class DefaultAdminUserInitializer(
                 email = adminEmail,
                 firstName = adminFirstName,
                 lastName = adminLastName,
-                role = UserRole.SUPER_ADMIN,
+                roles = setOf(UserRole.SUPER_ADMIN),
                 password = adminPassword,
                 phoneNumber = adminPhoneNumber
             )

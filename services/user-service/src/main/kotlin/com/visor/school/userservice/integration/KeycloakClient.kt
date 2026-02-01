@@ -142,7 +142,7 @@ class KeycloakClient(
             // Keycloak expects Map<String, List<String>> for attributes
             if (attributes.isNotEmpty()) {
                 this.attributes = attributes.mapValues { listOf(it.value) }.toMutableMap()
-                logger.info("Setting user attributes: \${attributes.keys}")
+                logger.info("Setting user attributes: ${attributes.keys}")
             }
         }
 
@@ -159,7 +159,7 @@ class KeycloakClient(
                 userId
             }
             409 -> throw UserAlreadyExistsException("User with email $email already exists in Keycloak")
-            else -> throw KeycloakException("Failed to create user in Keycloak: \${response.statusInfo.reasonPhrase}")
+            else -> throw KeycloakException("Failed to create user in Keycloak: ${response.statusInfo.reasonPhrase}")
         }
     }
 
@@ -227,7 +227,7 @@ class KeycloakClient(
             logger.info("User updated in Keycloak: $keycloakId")
         } catch (e: Exception) {
             logger.error("Failed to update user in Keycloak: $keycloakId", e)
-            throw KeycloakException("Failed to update user in Keycloak: \${e.message}", e)
+            throw KeycloakException("Failed to update user in Keycloak: ${e.message}", e)
         }
     }
 
@@ -243,6 +243,20 @@ class KeycloakClient(
     }
 
     /**
+     * Get all realm roles for a user
+     */
+    fun getUserRealmRoles(keycloakId: String): Set<String> {
+        return try {
+            val userResource = keycloak.realm(realm).users().get(keycloakId)
+            val roles = userResource.roles().realmLevel().listAll()
+            roles.map { it.name }.toSet()
+        } catch (e: Exception) {
+            logger.warn("Failed to get realm roles for user: $keycloakId", e)
+            emptySet()
+        }
+    }
+
+    /**
      * Assign a realm role to a user (using admin client)
      * This should be used for system initialization
      */
@@ -251,10 +265,57 @@ class KeycloakClient(
     }
 
     /**
+     * Assign multiple realm roles to a user (using admin client)
+     */
+    fun assignRealmRolesAsAdmin(keycloakId: String, roleNames: Set<String>) {
+        assignRealmRolesInternal(adminKeycloak, keycloakId, roleNames)
+    }
+
+    /**
      * Assign a realm role to a user (using service account)
      */
     fun assignRealmRole(keycloakId: String, roleName: String) {
         assignRealmRoleInternal(keycloak, keycloakId, roleName)
+    }
+
+    /**
+     * Assign multiple realm roles to a user (using service account)
+     */
+    fun assignRealmRoles(keycloakId: String, roleNames: Set<String>) {
+        assignRealmRolesInternal(keycloak, keycloakId, roleNames)
+    }
+
+    /**
+     * Remove a realm role from a user
+     */
+    fun removeRealmRole(keycloakId: String, roleName: String) {
+        removeRealmRoleInternal(keycloak, keycloakId, roleName)
+    }
+
+    /**
+     * Remove multiple realm roles from a user
+     */
+    fun removeRealmRoles(keycloakId: String, roleNames: Set<String>) {
+        removeRealmRolesInternal(keycloak, keycloakId, roleNames)
+    }
+
+    /**
+     * Sync roles: Set user's roles in Keycloak to match the provided set
+     * Removes roles not in the set and adds missing roles
+     */
+    fun syncRealmRoles(keycloakId: String, targetRoles: Set<String>) {
+        val currentRoles = getUserRealmRoles(keycloakId)
+        val rolesToAdd = targetRoles - currentRoles
+        val rolesToRemove = currentRoles - targetRoles
+
+        if (rolesToAdd.isNotEmpty()) {
+            assignRealmRoles(keycloakId, rolesToAdd)
+            logger.info("Added roles to Keycloak user $keycloakId: $rolesToAdd")
+        }
+        if (rolesToRemove.isNotEmpty()) {
+            removeRealmRoles(keycloakId, rolesToRemove)
+            logger.info("Removed roles from Keycloak user $keycloakId: $rolesToRemove")
+        }
     }
 
     /**
@@ -269,7 +330,63 @@ class KeycloakClient(
             logger.info("Realm role \'$roleName\' assigned to user: $keycloakId")
         } catch (e: Exception) {
             logger.error("Failed to assign realm role \'$roleName\' to user: $keycloakId", e)
-            throw KeycloakException("Failed to assign realm role: \${e.message}", e)
+            throw KeycloakException("Failed to assign realm role: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Internal method to assign multiple realm roles with specified Keycloak client
+     */
+    private fun assignRealmRolesInternal(keycloakClient: Keycloak, keycloakId: String, roleNames: Set<String>) {
+        if (roleNames.isEmpty()) return
+        
+        logger.info("Assigning realm roles \'$roleNames\' to Keycloak user: $keycloakId")
+        try {
+            val userResource = keycloakClient.realm(realm).users().get(keycloakId)
+            val roles = roleNames.map { roleName ->
+                keycloakClient.realm(realm).roles().get(roleName).toRepresentation()
+            }
+            userResource.roles().realmLevel().add(roles)
+            logger.info("Realm roles \'$roleNames\' assigned to user: $keycloakId")
+        } catch (e: Exception) {
+            logger.error("Failed to assign realm roles \'$roleNames\' to user: $keycloakId", e)
+            throw KeycloakException("Failed to assign realm roles: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Internal method to remove realm role with specified Keycloak client
+     */
+    private fun removeRealmRoleInternal(keycloakClient: Keycloak, keycloakId: String, roleName: String) {
+        logger.info("Removing realm role \'$roleName\' from Keycloak user: $keycloakId")
+        try {
+            val userResource = keycloakClient.realm(realm).users().get(keycloakId)
+            val role = keycloakClient.realm(realm).roles().get(roleName).toRepresentation()
+            userResource.roles().realmLevel().remove(listOf(role))
+            logger.info("Realm role \'$roleName\' removed from user: $keycloakId")
+        } catch (e: Exception) {
+            logger.error("Failed to remove realm role \'$roleName\' from user: $keycloakId", e)
+            throw KeycloakException("Failed to remove realm role: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Internal method to remove multiple realm roles with specified Keycloak client
+     */
+    private fun removeRealmRolesInternal(keycloakClient: Keycloak, keycloakId: String, roleNames: Set<String>) {
+        if (roleNames.isEmpty()) return
+        
+        logger.info("Removing realm roles \'$roleNames\' from Keycloak user: $keycloakId")
+        try {
+            val userResource = keycloakClient.realm(realm).users().get(keycloakId)
+            val roles = roleNames.map { roleName ->
+                keycloakClient.realm(realm).roles().get(roleName).toRepresentation()
+            }
+            userResource.roles().realmLevel().remove(roles)
+            logger.info("Realm roles \'$roleNames\' removed from user: $keycloakId")
+        } catch (e: Exception) {
+            logger.error("Failed to remove realm roles \'$roleNames\' from user: $keycloakId", e)
+            throw KeycloakException("Failed to remove realm roles: ${e.message}", e)
         }
     }
 
@@ -481,7 +598,7 @@ class KeycloakClient(
                 null
             }
         } catch (e: Exception) {
-            logger.debug("Could not parse error response body: \${e.message}")
+            logger.debug("Could not parse error response body: ${e.message}")
             null
         }
     }

@@ -16,7 +16,7 @@ data class RegisterRequest(
     @field:NotBlank
     val lastName: String,
 
-    val role: UserRole,
+    val roles: Set<UserRole>,
 
     @field:NotBlank
     val password: String,

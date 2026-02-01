@@ -10,7 +10,7 @@ data class UserResponse(
     val email: String,
     val firstName: String,
     val lastName: String,
-    val role: UserRole,
+    val roles: Set<UserRole>,
     val emailVerified: Boolean,
     val accountStatus: String
 ) {
@@ -21,7 +21,7 @@ data class UserResponse(
                 email = user.email,
                 firstName = user.firstName,
                 lastName = user.lastName,
-                role = user.role,
+                roles = user.roles.toSet(),
                 emailVerified = user.emailVerified,
                 accountStatus = user.accountStatus.name
             )

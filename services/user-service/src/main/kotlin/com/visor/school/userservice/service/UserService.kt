@@ -29,7 +29,7 @@ class UserService(
     private val logger = LoggerFactory.getLogger(UserService::class.java)
 
     /**
-     * Create a new user
+     * Create a new user with multiple roles
      * Flow: 1. Create user in Keycloak, 2. Get keycloakId, 3. Create User entity
      * Authorization: SUPER_ADMIN can create ADMINISTRATOR users; ADMINISTRATOR cannot create ADMINISTRATOR or SUPER_ADMIN users
      */
@@ -37,16 +37,20 @@ class UserService(
         email: String,
         firstName: String,
         lastName: String,
-        role: UserRole,
+        roles: Set<UserRole>,
         password: String,
         phoneNumber: String? = null
     ): User {
-        logger.info("Creating user: $email with role: $role")
+        if (roles.isEmpty()) {
+            throw IllegalArgumentException("User must have at least one role")
+        }
+
+        logger.info("Creating user: $email with roles: $roles")
 
         // Authorization check: Only SUPER_ADMIN can create ADMINISTRATOR or SUPER_ADMIN users
-        if (role == UserRole.ADMINISTRATOR || role == UserRole.SUPER_ADMIN) {
+        if (roles.contains(UserRole.ADMINISTRATOR) || roles.contains(UserRole.SUPER_ADMIN)) {
             if (!securityContextService.canManageAdministrators()) {
-                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can create $role users")
+                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can create users with ADMINISTRATOR or SUPER_ADMIN roles")
             }
         }
 
@@ -68,15 +72,16 @@ class UserService(
                 )
             )
 
-            // Step 2: Assign role in Keycloak (using admin client for permissions)
-            keycloakClient.assignRealmRoleAsAdmin(keycloakId, role.name)
-            logger.info("Role \${role.name} assigned to Keycloak user: $keycloakId")
+            // Step 2: Assign roles in Keycloak (using admin client for permissions)
+            val roleNames = roles.map { it.name }.toSet()
+            keycloakClient.assignRealmRolesAsAdmin(keycloakId, roleNames)
+            logger.info("Roles ${roleNames} assigned to Keycloak user: $keycloakId")
 
             // Step 3: Create User entity with keycloakId
             val user = User(
                 keycloakId = keycloakId,
                 email = email,
-                role = role,
+                roles = roles.toMutableSet(),
                 firstName = firstName,
                 lastName = lastName,
                 phoneNumber = phoneNumber,
@@ -85,7 +90,7 @@ class UserService(
             )
 
             val saved = userRepository.save(user)
-            logger.info("User created successfully: \${saved.id} (Keycloak ID: $keycloakId)")
+            logger.info("User created successfully: ${saved.id} (Keycloak ID: $keycloakId)")
 
             // Publish user created event
             eventPublisher.publishUserCreated(saved)
@@ -96,12 +101,12 @@ class UserService(
             throw IllegalArgumentException("User with email $email already exists!", e)
         } catch (e: KeycloakException) {
             logger.error("Keycloak error while creating user: $email", e)
-            throw RuntimeException("Failed to create user: \${e.message}", e)
+            throw RuntimeException("Failed to create user: ${e.message}", e)
         }
     }
 
     /**
-     * Create a user during system initialization (bypasses security checks)
+     * Create a user during system initialization with multiple roles (bypasses security checks)
      * This should only be used by bootstrap/initialization components
      * If user already exists in Keycloak, syncs it to local database
      */
@@ -109,11 +114,15 @@ class UserService(
         email: String,
         firstName: String,
         lastName: String,
-        role: UserRole,
+        roles: Set<UserRole>,
         password: String,
         phoneNumber: String? = null
     ): User {
-        logger.info("Creating system user: $email with role: $role")
+        if (roles.isEmpty()) {
+            throw IllegalArgumentException("User must have at least one role")
+        }
+
+        logger.info("Creating system user: $email with roles: $roles")
 
         // Check if user already exists in local database
         val existingUser = userRepository.findByEmail(email).orElse(null)
@@ -135,8 +144,9 @@ class UserService(
                 )
             )
 
-            // Step 2: Assign role in Keycloak (using admin credentials)
-            keycloakClient.assignRealmRoleAsAdmin(keycloakId, role.name)
+            // Step 2: Assign roles in Keycloak (using admin credentials)
+            val roleNames = roles.map { it.name }.toSet()
+            keycloakClient.assignRealmRolesAsAdmin(keycloakId, roleNames)
 
             // Step 3: Create User entity with keycloakId
             val user = User(
@@ -144,14 +154,14 @@ class UserService(
                 email = email,
                 firstName = firstName,
                 lastName = lastName,
-                role = role,
+                roles = roles.toMutableSet(),
                 phoneNumber = phoneNumber,
                 emailVerified = true,
                 accountStatus = AccountStatus.ACTIVE
             )
 
             val saved = userRepository.save(user)
-            logger.info("System user created successfully: \${saved.id} (Keycloak ID: $keycloakId)")
+            logger.info("System user created successfully: ${saved.id} (Keycloak ID: $keycloakId)")
 
             // Publish user created event
             eventPublisher.publishUserCreated(saved)
@@ -172,8 +182,9 @@ class UserService(
                 keycloakUser.isEmailVerified = true
                 keycloakClient.updateUser(keycloakUser.id, keycloakUser)
                 
-                // Ensure role is assigned in Keycloak
-                keycloakClient.assignRealmRoleAsAdmin(keycloakUser.id, role.name)
+                // Sync roles in Keycloak
+                val roleNames = roles.map { it.name }.toSet()
+                keycloakClient.syncRealmRoles(keycloakUser.id, roleNames)
                 
                 // Create local User entity
                 val user = User(
@@ -181,14 +192,14 @@ class UserService(
                     email = email,
                     firstName = firstName,
                     lastName = lastName,
-                    role = role,
+                    roles = roles.toMutableSet(),
                     phoneNumber = phoneNumber,
                     emailVerified = true,
                     accountStatus = AccountStatus.ACTIVE
                 )
 
                 val saved = userRepository.save(user)
-                logger.info("System user synced from Keycloak: \${saved.id} (Keycloak ID: \${keycloakUser.id})")
+                logger.info("System user synced from Keycloak: ${saved.id} (Keycloak ID: ${keycloakUser.id})")
 
                 // Publish user created event
                 eventPublisher.publishUserCreated(saved)
@@ -196,11 +207,11 @@ class UserService(
                 return saved
             } catch (syncError: Exception) {
                 logger.error("Failed to sync user from Keycloak: $email", syncError)
-                throw IllegalArgumentException("User exists in Keycloak but failed to sync to local database: \${syncError.message}", syncError)
+                throw IllegalArgumentException("User exists in Keycloak but failed to sync to local database: ${syncError.message}", syncError)
             }
         } catch (e: KeycloakException) {
             logger.error("Keycloak error while creating system user: $email", e)
-            throw RuntimeException("Failed to create user in Keycloak: \${e.message}", e)
+            throw RuntimeException("Failed to create user in Keycloak: ${e.message}", e)
         }
     }
 
@@ -229,7 +240,7 @@ class UserService(
     }
 
     /**
-     * Update user information
+     * Update user information with multiple roles
      * Authorization: SUPER_ADMIN can update ADMINISTRATOR users; ADMINISTRATOR cannot update ADMINISTRATOR or SUPER_ADMIN users
      */
     fun updateUser(
@@ -237,30 +248,28 @@ class UserService(
         firstName: String? = null,
         lastName: String? = null,
         phoneNumber: String? = null,
-        role: UserRole? = null
+        roles: Set<UserRole>? = null
     ): User {
         val user = userRepository.findById(id)
             .orElseThrow { IllegalArgumentException("User not found: $id") }
 
         // Authorization check: Only SUPER_ADMIN can update ADMINISTRATOR or SUPER_ADMIN users
-        if (user.role == UserRole.ADMINISTRATOR || user.role == UserRole.SUPER_ADMIN) {
+        if (user.hasRole(UserRole.ADMINISTRATOR) || user.hasRole(UserRole.SUPER_ADMIN)) {
             if (!securityContextService.canManageAdministrators()) {
-                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can update \${user.role} users")
+                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can update users with ADMINISTRATOR or SUPER_ADMIN roles")
             }
         }
 
-        // Prevent role escalation: ADMINISTRATOR cannot change role to SUPER_ADMIN
-        if (role != null && role == UserRole.SUPER_ADMIN) {
-            val currentRole = securityContextService.getCurrentUserRole()
-            if (currentRole != UserRole.SUPER_ADMIN) {
+        // Prevent role escalation: ADMINISTRATOR cannot add SUPER_ADMIN role
+        if (roles != null && roles.contains(UserRole.SUPER_ADMIN)) {
+            if (!securityContextService.hasRole(UserRole.SUPER_ADMIN)) {
                 throw SecurityException("Only SUPER_ADMIN can assign SUPER_ADMIN role")
             }
         }
 
         // Prevent ADMINISTRATOR from modifying SUPER_ADMIN users
-        if (user.role == UserRole.SUPER_ADMIN) {
-            val currentRole = securityContextService.getCurrentUserRole()
-            if (currentRole != UserRole.SUPER_ADMIN) {
+        if (user.hasRole(UserRole.SUPER_ADMIN)) {
+            if (!securityContextService.hasRole(UserRole.SUPER_ADMIN)) {
                 throw SecurityException("Only SUPER_ADMIN can modify SUPER_ADMIN users")
             }
         }
@@ -280,9 +289,18 @@ class UserService(
             logger.info("Updating user $id: phoneNumber")
         }
 
-        if (role != null) {
-            user.role = role
-            logger.info("Updating user $id: role to $role")
+        if (roles != null) {
+            if (roles.isEmpty()) {
+                throw IllegalArgumentException("User must have at least one role")
+            }
+            
+            // Sync roles with Keycloak
+            val roleNames = roles.map { it.name }.toSet()
+            keycloakClient.syncRealmRoles(user.keycloakId, roleNames)
+            
+            // Update local roles
+            user.replaceRoles(roles)
+            logger.info("Updating user $id: roles to $roles")
         }
 
         user.updatedAt = java.time.Instant.now()
@@ -299,9 +317,9 @@ class UserService(
             .orElseThrow { IllegalArgumentException("User not found: $id") }
 
         // Authorization check: Only SUPER_ADMIN can update ADMINISTRATOR or SUPER_ADMIN account status
-        if (user.role == UserRole.ADMINISTRATOR || user.role == UserRole.SUPER_ADMIN) {
+        if (user.hasRole(UserRole.ADMINISTRATOR) || user.hasRole(UserRole.SUPER_ADMIN)) {
             if (!securityContextService.canManageAdministrators()) {
-                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can update \${user.role} account status")
+                throw SecurityException("Only SUPER_ADMIN or users with MANAGE_ADMINISTRATORS permission can update users with ADMINISTRATOR or SUPER_ADMIN roles account status")
             }
         }
 
@@ -328,7 +346,7 @@ class UserService(
         }
 
         // If target is ADMINISTRATOR or SUPER_ADMIN, need MANAGE_ADMINISTRATORS permission
-        if (targetUser.role == UserRole.ADMINISTRATOR || targetUser.role == UserRole.SUPER_ADMIN) {
+        if (targetUser.hasRole(UserRole.ADMINISTRATOR) || targetUser.hasRole(UserRole.SUPER_ADMIN)) {
             return securityContextService.canManageAdministrators()
         }
 

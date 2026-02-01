@@ -69,4 +69,8 @@ test-results/
 .cursor
 .specify
 
+
+.nx/installation
+.nx/cache
+.nx/workspace-data
 .idx-docker

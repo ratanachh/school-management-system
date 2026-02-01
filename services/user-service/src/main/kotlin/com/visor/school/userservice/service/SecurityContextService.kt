@@ -54,11 +54,11 @@ class SecurityContextService(
     }
 
     /**
-     * Get current user's role
+     * Get current user's roles
      */
-    fun getCurrentUserRole(): UserRole? {
+    fun getCurrentUserRoles(): Set<UserRole> {
         val user = getCurrentUser()
-        return user?.role
+        return user?.roles?.toSet() ?: emptySet()
     }
 
     /**
@@ -73,8 +73,16 @@ class SecurityContextService(
      * Check if current user has a specific role
      */
     fun hasRole(role: UserRole): Boolean {
-        val currentRole = getCurrentUserRole()
-        return currentRole == role
+        val user = getCurrentUser()
+        return user?.hasRole(role) ?: false
+    }
+
+    /**
+     * Check if current user has any of the specified roles
+     */
+    fun hasAnyRole(vararg roles: UserRole): Boolean {
+        val user = getCurrentUser()
+        return user?.hasAnyRole(*roles) ?: false
     }
 
     /**

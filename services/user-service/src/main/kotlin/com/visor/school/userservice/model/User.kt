@@ -7,6 +7,7 @@ import java.util.UUID
 /**
  * User entity representing a person with system access
  * Password management is delegated to Keycloak via keycloakId reference
+ * Users can have multiple roles (many-to-many relationship)
  */
 @Entity
 @Table(name = "users", indexes = [
@@ -24,9 +25,11 @@ class User(
     @Column(nullable = false, unique = true)
     val email: String,
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = [JoinColumn(name = "user_id")])
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    var role: UserRole,
+    @Column(name = "role", nullable = false)
+    var roles: MutableSet<UserRole> = mutableSetOf(),
 
     @Column(name = "first_name", nullable = false)
     var firstName: String,
@@ -57,6 +60,41 @@ class User(
     @Column(name = "last_login_at")
     var lastLoginAt: Instant? = null
 ) {
+    /**
+     * Check if user has a specific role
+     */
+    fun hasRole(role: UserRole): Boolean = roles.contains(role)
+
+    /**
+     * Check if user has any of the specified roles
+     */
+    fun hasAnyRole(vararg roles: UserRole): Boolean = roles.any { this.roles.contains(it) }
+
+    /**
+     * Add a role to the user
+     */
+    fun addRole(role: UserRole) {
+        roles.add(role)
+        updatedAt = Instant.now()
+    }
+
+    /**
+     * Remove a role from the user
+     */
+    fun removeRole(role: UserRole) {
+        roles.remove(role)
+        updatedAt = Instant.now()
+    }
+
+    /**
+     * Replace all roles with new roles (replaces all existing roles)
+     */
+    fun replaceRoles(newRoles: Set<UserRole>) {
+        roles.clear()
+        roles.addAll(newRoles)
+        updatedAt = Instant.now()
+    }
+
     fun updateLastLogin() {
         lastLoginAt = Instant.now()
         updatedAt = Instant.now()

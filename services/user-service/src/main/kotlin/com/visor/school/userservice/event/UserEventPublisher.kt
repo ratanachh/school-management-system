@@ -45,7 +45,7 @@ class UserEventPublisher(
         val event = UserCreatedEvent(
             userId = user.id!!,
             email = user.email,
-            role = user.role.name,
+            roles = user.roles.map { it.name }.toSet(),
             firstName = user.firstName,
             lastName = user.lastName,
             keycloakId = user.keycloakId
@@ -140,7 +140,7 @@ class UserEventPublisher(
         val event = UserUpdatedEvent(
             userId = user.id!!,
             email = user.email,
-            role = user.role.name,
+            roles = user.roles.map { it.name }.toSet(),
             accountStatus = user.accountStatus.name
         )
 
@@ -176,7 +176,7 @@ class UserEventPublisher(
 data class UserCreatedEvent(
     val userId: UUID,
     val email: String,
-    val role: String,
+    val roles: Set<String>,
     val firstName: String,
     val lastName: String,
     val keycloakId: String
@@ -192,7 +192,7 @@ data class UserCreatedEvent(
 data class UserUpdatedEvent(
     val userId: UUID,
     val email: String,
-    val role: String,
+    val roles: Set<String>,
     val accountStatus: String
 ) : BaseEvent(), java.io.Serializable {
     override val eventType: String = "UserUpdatedEvent"

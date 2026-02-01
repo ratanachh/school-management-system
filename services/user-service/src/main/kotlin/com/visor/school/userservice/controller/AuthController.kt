@@ -39,13 +39,13 @@ class AuthController(
      * Authorization: SUPER_ADMIN or MANAGE_ADMINISTRATORS permission required for ADMINISTRATOR role
      */
     @PostMapping("/register")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasPermission(null, 'MANAGE_ADMINISTRATORS') or #request.role != T(com.visor.school.userservice.model.UserRole).ADMINISTRATOR and #request.role != T(com.visor.school.userservice.model.UserRole).SUPER_ADMIN")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasPermission(null, 'MANAGE_ADMINISTRATORS') or !#request.roles.contains(T(com.visor.school.userservice.model.UserRole).ADMINISTRATOR) and !#request.roles.contains(T(com.visor.school.userservice.model.UserRole).SUPER_ADMIN)")
     fun register(@Valid @RequestBody request: RegisterRequest): ResponseEntity<ApiResponse<UserResponse>> {
         val user = userService.createUser(
             email = request.email,
             firstName = request.firstName,
             lastName = request.lastName,
-            role = request.role,
+            roles = request.roles,
             password = request.password,
             phoneNumber = request.phoneNumber
         )

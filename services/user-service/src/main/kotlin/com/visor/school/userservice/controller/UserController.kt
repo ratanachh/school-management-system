@@ -46,7 +46,7 @@ class UserController(
             firstName = request.firstName,
             lastName = request.lastName,
             phoneNumber = request.phoneNumber,
-            role = request.role
+            roles = request.roles
         )
 
         return ResponseEntity.ok(ApiResponse.success(UserResponse.from(user), "User updated successfully"))
@@ -100,7 +100,7 @@ class UserController(
             ?: return ResponseEntity.notFound().build()
 
         // Verify user is an administrator
-        if (user.role != UserRole.ADMINISTRATOR && user.role != UserRole.SUPER_ADMIN) {
+        if (!user.hasRole(UserRole.ADMINISTRATOR) && !user.hasRole(UserRole.SUPER_ADMIN)) {
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error("User is not an administrator"))
         }
@@ -113,7 +113,7 @@ data class UpdateUserRequest(
     val firstName: String? = null,
     val lastName: String? = null,
     val phoneNumber: String? = null,
-    val role: UserRole? = null
+    val roles: Set<UserRole>? = null
 )
 
 data class UpdateStatusRequest(
