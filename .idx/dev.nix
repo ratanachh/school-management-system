@@ -36,6 +36,9 @@
       };
       # Runs when a workspace restarted
       onStart = {
+        docker = ''
+          echo '{"data-root": "/home/user/school-mgmt/.idx-docker"}' > /home/user/.config/docker/daemon.json
+        '';
         # android = ''
         #   echo -e "\033[1;33mWaiting for Android emulator to be ready...\033[0m"
         #   # Wait for the device connection command to finish
