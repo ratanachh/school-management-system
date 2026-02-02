@@ -19,7 +19,7 @@ INSERT INTO CONFIG_PROPERTIES (APPLICATION, PROFILE, LABEL, KEY, VALUE) VALUES
 ('user-service', 'default', 'master', 'spring.rabbitmq.username', '${RABBITMQ_USER}'),
 ('user-service', 'default', 'master', 'spring.rabbitmq.password', '${RABBITMQ_PASSWORD}'),
 ('user-service', 'default', 'master', 'spring.security.oauth2.resourceserver.jwt.issuer-uri', '${KEYCLOAK_SERVER_URL}/realms/${KEYCLOAK_REALM}'),
-('user-service', 'default', 'master', 'eureka.client.service-url.defaultZone', '${EUREKA_SERVER_URL:http://localhost:8761/eureka/}'),
+('user-service', 'default', 'master', 'eureka.client.service-url.defaultZone', '${DISCOVERY_SERVER_URL:http://localhost:8761}/eureka/'),
 ('user-service', 'default', 'master', 'eureka.instance.prefer-ip-address', 'true'),
 ('user-service', 'default', 'master', 'eureka.instance.ip-address', '${EUREKA_INSTANCE_IP:127.0.0.1}'),
 ('user-service', 'default', 'master', 'keycloak.realm', '${KEYCLOAK_REALM}'),
