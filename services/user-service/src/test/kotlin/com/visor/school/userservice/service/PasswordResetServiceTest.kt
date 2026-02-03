@@ -38,7 +38,7 @@ class PasswordResetServiceTest {
         testUser = User(
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )

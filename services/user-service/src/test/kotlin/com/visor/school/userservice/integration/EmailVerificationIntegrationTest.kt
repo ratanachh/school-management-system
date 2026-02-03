@@ -36,7 +36,7 @@ class EmailVerificationIntegrationTest @Autowired constructor(
             email = email,
             firstName = "Verify",
             lastName = "Test",
-            role = UserRole.STUDENT,
+            roles = setOf(UserRole.STUDENT),
             password = "Password123!"
         )
 
@@ -62,7 +62,7 @@ class EmailVerificationIntegrationTest @Autowired constructor(
             email = email,
             firstName = "Token",
             lastName = "Test",
-            role = UserRole.STUDENT,
+            roles = setOf(UserRole.STUDENT),
             password = "Password123!"
         )
 

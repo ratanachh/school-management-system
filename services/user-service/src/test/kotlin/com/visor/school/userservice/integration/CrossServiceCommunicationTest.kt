@@ -47,7 +47,7 @@ class CrossServiceCommunicationTest @Autowired constructor(
             email = email,
             firstName = "Cross",
             lastName = "Service",
-            role = UserRole.STUDENT,
+            roles = setOf(UserRole.STUDENT),
             password = "StrongPassword123!"
         )
 

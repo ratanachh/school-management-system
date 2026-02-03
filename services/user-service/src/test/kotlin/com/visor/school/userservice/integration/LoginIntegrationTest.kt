@@ -34,7 +34,7 @@ class LoginIntegrationTest @Autowired constructor(
             email = email,
             firstName = "Login",
             lastName = "Test",
-            role = UserRole.TEACHER,
+            roles = setOf(UserRole.TEACHER),
             password = "Password123!"
         )
 
@@ -57,7 +57,7 @@ class LoginIntegrationTest @Autowired constructor(
             email = email,
             firstName = "Email",
             lastName = "Test",
-            role = UserRole.STUDENT,
+            roles = setOf(UserRole.STUDENT),
             password = "Password123!"
         )
 

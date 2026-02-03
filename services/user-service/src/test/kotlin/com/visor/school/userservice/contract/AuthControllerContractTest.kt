@@ -55,7 +55,7 @@ class AuthControllerContractTest {
             "email" to "test@example.com",
             "firstName" to "John",
             "lastName" to "Doe",
-            "role" to "TEACHER",
+            "roles" to listOf("TEACHER"),
             "password" to "password123",
             "phoneNumber" to "1234567890"
         )
@@ -63,7 +63,7 @@ class AuthControllerContractTest {
             id = UUID.randomUUID(),
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe",
             phoneNumber = "1234567890"
@@ -111,7 +111,7 @@ class AuthControllerContractTest {
             id = UUID.randomUUID(),
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe",
             accountStatus = AccountStatus.ACTIVE
@@ -186,7 +186,7 @@ class AuthControllerContractTest {
             id = UUID.randomUUID(),
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )

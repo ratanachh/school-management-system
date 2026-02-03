@@ -41,7 +41,7 @@ class UserRegistrationIntegrationTest @Autowired constructor(
             email = email,
             firstName = firstName,
             lastName = lastName,
-            role = UserRole.STUDENT,
+            roles = setOf(UserRole.STUDENT),
             password = password
         )
 
@@ -52,7 +52,7 @@ class UserRegistrationIntegrationTest @Autowired constructor(
         assertEquals(email, user.email)
         assertEquals(firstName, user.firstName)
         assertEquals(lastName, user.lastName)
-        assertEquals(UserRole.STUDENT, user.role)
+        assertTrue(user.roles.contains(UserRole.STUDENT))
 
         // Verify user is persisted
         val savedUser = userRepository.findById(user.id!!)
@@ -68,7 +68,7 @@ class UserRegistrationIntegrationTest @Autowired constructor(
             email = email,
             firstName = "First",
             lastName = "User",
-            role = UserRole.TEACHER,
+            roles = setOf(UserRole.TEACHER),
             password = "Password123!"
         )
 
@@ -78,7 +78,7 @@ class UserRegistrationIntegrationTest @Autowired constructor(
                 email = email,
                 firstName = "Second",
                 lastName = "User",
-                role = UserRole.TEACHER,
+                roles = setOf(UserRole.TEACHER),
                 password = "Password123!"
             )
         }

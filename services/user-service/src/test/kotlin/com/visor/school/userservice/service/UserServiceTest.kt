@@ -59,6 +59,7 @@ class UserServiceTest {
             emailVerified = eq(false),
             attributes = any()
         )).thenReturn(testKeycloakId)
+        doNothing().whenever(keycloakClient).assignRealmRolesAsAdmin(any(), any())
         whenever(userRepository.save(any())).thenAnswer { it.arguments[0] as User }
         doNothing().whenever(eventPublisher).publishUserCreated(any())
 
@@ -67,7 +68,7 @@ class UserServiceTest {
             email = testEmail,
             firstName = "John",
             lastName = "Doe",
-            role = UserRole.TEACHER,
+            roles = setOf(UserRole.TEACHER),
             password = testPassword
         )
 
@@ -75,7 +76,7 @@ class UserServiceTest {
         assertNotNull(result)
         assertEquals(testKeycloakId, result.keycloakId)
         assertEquals(testEmail, result.email)
-        assertEquals(UserRole.TEACHER, result.role)
+        assertTrue(result.roles.contains(UserRole.TEACHER))
         verify(keycloakClient).createUser(
             email = eq(testEmail),
             firstName = eq("John"),
@@ -99,7 +100,7 @@ class UserServiceTest {
                 email = testEmail,
                 firstName = "John",
                 lastName = "Doe",
-                role = UserRole.TEACHER,
+                roles = setOf(UserRole.TEACHER),
                 password = testPassword
             )
         }
@@ -120,7 +121,7 @@ class UserServiceTest {
                 email = testEmail,
                 firstName = "John",
                 lastName = "Doe",
-                role = UserRole.TEACHER,
+                roles = setOf(UserRole.TEACHER),
                 password = testPassword
             )
         }
@@ -135,7 +136,7 @@ class UserServiceTest {
         val user = User(
             keycloakId = testKeycloakId,
             email = testEmail,
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )
@@ -170,7 +171,7 @@ class UserServiceTest {
         val user = User(
             keycloakId = testKeycloakId,
             email = testEmail,
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )

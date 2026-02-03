@@ -12,7 +12,7 @@ class UserTest {
         val user = User(
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )
@@ -21,7 +21,7 @@ class UserTest {
         assertNull(user.id)
         assertEquals("keycloak-123", user.keycloakId)
         assertEquals("test@example.com", user.email)
-        assertEquals(UserRole.TEACHER, user.role)
+        assertTrue(user.roles.contains(UserRole.TEACHER))
         assertEquals("John", user.firstName)
         assertEquals("Doe", user.lastName)
         assertFalse(user.emailVerified)
@@ -35,7 +35,7 @@ class UserTest {
         val user = User(
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.STUDENT,
+            roles = mutableSetOf(UserRole.STUDENT),
             firstName = "Jane",
             lastName = "Smith"
         )
@@ -49,7 +49,7 @@ class UserTest {
         val user = User(
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )
@@ -70,7 +70,7 @@ class UserTest {
         val user = User(
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )
@@ -90,7 +90,7 @@ class UserTest {
         val user = User(
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )

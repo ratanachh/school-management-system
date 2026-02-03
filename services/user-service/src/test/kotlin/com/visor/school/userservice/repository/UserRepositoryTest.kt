@@ -34,7 +34,7 @@ class UserRepositoryTest @Autowired constructor(
         val user = User(
             keycloakId = "keycloak-123",
             email = "test@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "John",
             lastName = "Doe"
         )
@@ -53,7 +53,7 @@ class UserRepositoryTest @Autowired constructor(
         val user = User(
             keycloakId = "keycloak-456",
             email = "teacher@example.com",
-            role = UserRole.TEACHER,
+            roles = mutableSetOf(UserRole.TEACHER),
             firstName = "Jane",
             lastName = "Smith"
         )
@@ -71,7 +71,7 @@ class UserRepositoryTest @Autowired constructor(
         val user = User(
             keycloakId = "keycloak-789",
             email = "student@example.com",
-            role = UserRole.STUDENT,
+            roles = mutableSetOf(UserRole.STUDENT),
             firstName = "Bob",
             lastName = "Johnson"
         )
@@ -101,7 +101,7 @@ class UserRepositoryTest @Autowired constructor(
         val user = User(
             keycloakId = "keycloak-999",
             email = "exists@example.com",
-            role = UserRole.ADMINISTRATOR,
+            roles = mutableSetOf(UserRole.ADMINISTRATOR),
             firstName = "Admin",
             lastName = "User"
         )
@@ -117,7 +117,7 @@ class UserRepositoryTest @Autowired constructor(
         val user = User(
             keycloakId = "keycloak-111",
             email = "admin@example.com",
-            role = UserRole.ADMINISTRATOR,
+            roles = mutableSetOf(UserRole.ADMINISTRATOR),
             firstName = "Admin",
             lastName = "User"
         )

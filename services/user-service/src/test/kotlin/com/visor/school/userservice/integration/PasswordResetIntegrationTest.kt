@@ -37,7 +37,7 @@ class PasswordResetIntegrationTest @Autowired constructor(
             email = email,
             firstName = "Reset",
             lastName = "Test",
-            role = UserRole.TEACHER,
+            roles = setOf(UserRole.TEACHER),
             password = "OriginalPassword123!"
         )
 
@@ -57,7 +57,7 @@ class PasswordResetIntegrationTest @Autowired constructor(
             email = email,
             firstName = "Keycloak",
             lastName = "Test",
-            role = UserRole.STUDENT,
+            roles = setOf(UserRole.STUDENT),
             password = "OldPassword123!"
         )
 
