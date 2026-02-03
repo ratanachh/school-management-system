@@ -27,6 +27,7 @@
       "fwcd.kotlin"
       "mathiasfrohlich.Kotlin"
       "VMware.vscode-boot-dev-pack"
+      "cweijan.vscode-database-client2"
     ];
     workspace = {
       # Runs when a workspace is first created with this `dev.nix` file
