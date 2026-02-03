@@ -45,8 +45,10 @@ The docker-compose setup includes the following services:
 1. **Create environment file**
    ```bash
    # From the project root directory
+   cp .env.example .env
    cp .env.example docker/.env
    ```
+   **Important:** Copy `.env.example` to `.env` and never commit `.env` (it contains secrets). The `.env` file is in `.gitignore`.
 
 2. **Edit the .env file** with your desired passwords:
    ```bash
