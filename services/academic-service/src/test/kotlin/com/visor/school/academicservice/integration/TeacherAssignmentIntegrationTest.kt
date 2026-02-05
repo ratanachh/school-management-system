@@ -1,5 +1,6 @@
 package com.visor.school.academicservice.integration
 
+import com.visor.school.academicservice.config.TestConfig
 import com.visor.school.academicservice.model.*
 import com.visor.school.academicservice.repository.ClassRepository
 import com.visor.school.academicservice.repository.TeacherAssignmentRepository
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -21,6 +23,7 @@ import java.util.UUID
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestConfig::class)
 @Transactional
 class TeacherAssignmentIntegrationTest @Autowired constructor(
     private val teacherService: TeacherService,
@@ -63,9 +66,9 @@ class TeacherAssignmentIntegrationTest @Autowired constructor(
         // Then - Verify teacher can be assigned as class teacher
         // Note: In a full implementation, we'd create a TeacherAssignment first
         // For now, we verify the class exists and teacher exists
-        val savedClass = classRepository.findById(classEntity.id)
+        val savedClass = classRepository.findById(classEntity.id!!)
         assertTrue(savedClass.isPresent)
-        val savedTeacher = teacherRepository.findById(teacher.id)
+        val savedTeacher = teacherRepository.findById(teacher.id!!)
         assertTrue(savedTeacher.isPresent)
     }
 
@@ -128,16 +131,16 @@ class TeacherAssignmentIntegrationTest @Autowired constructor(
 
         // When - Create teacher assignment
         val assignment = TeacherAssignment(
-            teacherId = teacher.id,
-            classId = classEntity.id,
+            teacherId = teacher.id!!,
+            classId = classEntity.id!!,
             isClassTeacher = false
         )
 
         // Then - Verify assignment can be created
         // In a full implementation, this would be saved via a service method
         assertNotNull(assignment)
-        assertEquals(teacher.id, assignment.teacherId)
-        assertEquals(classEntity.id, assignment.classId)
+        assertEquals(teacher.id!!, assignment.teacherId)
+        assertEquals(classEntity.id!!, assignment.classId)
     }
 }
 

@@ -19,7 +19,8 @@ class StudentTest {
             gradeLevel = 5
         )
 
-        assertNotNull(student.id)
+        // ID is null until entity is persisted
+        assertNull(student.id)
         assertEquals("STU-2025-001", student.studentId)
         assertEquals(5, student.gradeLevel)
         assertEquals(EnrollmentStatus.ENROLLED, student.enrollmentStatus)

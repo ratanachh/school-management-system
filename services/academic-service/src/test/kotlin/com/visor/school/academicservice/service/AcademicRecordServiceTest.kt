@@ -25,6 +25,12 @@ class AcademicRecordServiceTest {
     private lateinit var academicRecordRepository: AcademicRecordRepository
 
     @Mock
+    private lateinit var gpaCalculator: GPACalculator
+
+    @Mock
+    private lateinit var transcriptGenerator: TranscriptGenerator
+
+    @Mock
     private lateinit var academicRecordEventPublisher: AcademicRecordEventPublisher
 
     @InjectMocks
@@ -45,7 +51,7 @@ class AcademicRecordServiceTest {
             .thenReturn(Optional.of(record))
 
         // When
-        val result = academicRecordService.getAcademicRecordByStudentId(testStudentId.toString())
+        val result = academicRecordService.getAcademicRecord(testStudentId)
 
         // Then
         assertNotNull(result)
@@ -61,7 +67,7 @@ class AcademicRecordServiceTest {
             .thenReturn(Optional.empty())
 
         // When
-        val result = academicRecordService.getAcademicRecordByStudentId(testStudentId.toString())
+        val result = academicRecordService.getAcademicRecord(testStudentId)
 
         // Then
         assertNull(result)
@@ -75,7 +81,7 @@ class AcademicRecordServiceTest {
         whenever(academicRecordRepository.save(any())).thenAnswer { it.arguments[0] as AcademicRecord }
 
         // When
-        val result = academicRecordService.createAcademicRecord(testStudentId.toString())
+        val result = academicRecordService.getOrCreateAcademicRecord(testStudentId)
 
         // Then
         assertNotNull(result)

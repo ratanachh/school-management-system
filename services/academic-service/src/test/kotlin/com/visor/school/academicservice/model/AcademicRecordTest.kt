@@ -17,7 +17,8 @@ class AcademicRecordTest {
             academicStanding = AcademicStanding.GOOD_STANDING
         )
 
-        assertNotNull(record.id)
+        // ID is null until entity is persisted
+        assertNull(record.id)
         assertNotNull(record.studentId)
         assertEquals(BigDecimal("3.4"), record.cumulativeGPA)
         assertEquals(24, record.creditsEarned)

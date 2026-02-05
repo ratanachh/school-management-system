@@ -17,7 +17,7 @@ import java.util.UUID
 class AcademicRecord(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 
     @Column(name = "student_id", nullable = false, unique = true)
     val studentId: UUID,

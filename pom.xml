@@ -36,12 +36,12 @@
         <module>shared/keycloak-initializer-core</module>
         <module>services/common</module>
         <module>services/user-service</module>
-        <!-- <module>services/academic-service</module>
+        <module>services/academic-service</module>
         <module>services/attendance-service</module>
         <module>services/academic-assessment-service</module>
         <module>services/search-service</module>
         <module>services/audit-service</module>
-        <module>services/notification-service</module> -->
+        <module>services/notification-service</module>
     </modules>
 
     <dependencyManagement>
@@ -148,6 +148,20 @@
             <artifactId>kotlin-test</artifactId>
             <version>${kotlin.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.visor.school</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

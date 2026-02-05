@@ -39,6 +39,15 @@ services:
       retries: 5
     networks:
       - school-network
+      - school_net
+
+  busybox:
+    image: busybox:latest
+    container_name: school-busybox
+    command: sleep infinity
+    networks:
+      - school-network
+      - school_net
 
   # # Elasticsearch 8.11.0 - Search engine
   elasticsearch:
@@ -47,7 +56,7 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
     ports:
       - "9200:9200"
       - "9300:9300"

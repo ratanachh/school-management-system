@@ -67,7 +67,7 @@ data class AcademicRecordResponse(
     companion object {
         fun from(record: AcademicRecord): AcademicRecordResponse {
             return AcademicRecordResponse(
-                id = record.id,
+                id = record.id!!,
                 studentId = record.studentId,
                 enrollmentHistory = record.enrollmentHistory.map { EnrollmentEntryResponse.from(it) },
                 completedCourses = record.completedCourses.map { CourseCompletionResponse.from(it) },

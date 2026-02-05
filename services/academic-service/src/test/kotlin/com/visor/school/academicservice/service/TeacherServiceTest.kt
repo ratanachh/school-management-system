@@ -22,12 +22,14 @@ class TeacherServiceTest {
     @Mock
     private lateinit var teacherRepository: TeacherRepository
 
+    @Mock
+    private lateinit var employeeIdGenerator: EmployeeIdGenerator
+
     @InjectMocks
     private lateinit var teacherService: TeacherService
 
     private val testTeacher = Teacher(
-        id = UUID.randomUUID().toString(),
-        userId = UUID.randomUUID().toString(),
+        userId = UUID.randomUUID(),
         employeeId = "T54321",
         qualifications = listOf("PhD in Physics"),
         subjectSpecializations = listOf("Physics", "Quantum Mechanics"),
@@ -39,7 +41,19 @@ class TeacherServiceTest {
     @Test
     fun `create teacher should save and return teacher`() {
         // Given
-        whenever(teacherRepository.save(any<Teacher>())).thenReturn(testTeacher)
+        val savedTeacher = Teacher(
+            id = UUID.randomUUID(),
+            userId = testTeacher.userId,
+            employeeId = "T54321",
+            qualifications = testTeacher.qualifications,
+            subjectSpecializations = testTeacher.subjectSpecializations,
+            hireDate = testTeacher.hireDate,
+            employmentStatus = testTeacher.employmentStatus,
+            department = testTeacher.department
+        )
+        whenever(employeeIdGenerator.generateEmployeeId()).thenReturn("T54321")
+        whenever(teacherRepository.findByUserId(any())).thenReturn(Optional.empty())
+        whenever(teacherRepository.save(any<Teacher>())).thenReturn(savedTeacher)
 
         // When
         val createdTeacher = teacherService.createTeacher(
@@ -63,7 +77,7 @@ class TeacherServiceTest {
         whenever(teacherRepository.findById(teacherId)).thenReturn(Optional.of(testTeacher))
 
         // When
-        val foundTeacher = teacherService.getTeacherById(teacherId.toString())
+        val foundTeacher = teacherService.getTeacherById(teacherId)
 
         // Then
         assertEquals(testTeacher, foundTeacher)
@@ -73,32 +87,30 @@ class TeacherServiceTest {
     @Test
     fun `get teachers by status should return a list`() {
         // Given
-        val pageable = PageRequest.of(0, 10)
-        whenever(teacherRepository.findByEmploymentStatus(EmploymentStatus.ACTIVE, pageable))
-            .thenReturn(PageImpl(listOf(testTeacher)))
+        whenever(teacherRepository.findByEmploymentStatus(EmploymentStatus.ACTIVE))
+            .thenReturn(listOf(testTeacher))
 
         // When
-        val teachers = teacherService.getTeachersByStatus(EmploymentStatus.ACTIVE, 1)
+        val teachers = teacherService.getTeachersByStatus(EmploymentStatus.ACTIVE)
 
         // Then
         assertFalse(teachers.isEmpty())
         assertEquals(1, teachers.size)
-        verify(teacherRepository).findByEmploymentStatus(EmploymentStatus.ACTIVE, pageable)
+        verify(teacherRepository).findByEmploymentStatus(EmploymentStatus.ACTIVE)
     }
 
     @Test
     fun `get teachers by department should return a list`() {
         // Given
-        val pageable = PageRequest.of(0, 10)
-        whenever(teacherRepository.findByDepartment("Science", pageable))
-            .thenReturn(PageImpl(listOf(testTeacher)))
+        whenever(teacherRepository.findByDepartment("Science"))
+            .thenReturn(listOf(testTeacher))
 
         // When
-        val teachers = teacherService.getTeachersByDepartment("Science", 1)
+        val teachers = teacherService.getTeachersByDepartment("Science")
 
         // Then
         assertFalse(teachers.isEmpty())
         assertEquals(1, teachers.size)
-        verify(teacherRepository).findByDepartment("Science", pageable)
+        verify(teacherRepository).findByDepartment("Science")
     }
 }

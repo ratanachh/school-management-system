@@ -30,7 +30,7 @@ class StudentEventPublisher(
      */
     fun publishStudentEnrolled(student: Student) {
         val event = StudentEnrolledEvent(
-            studentId = student.id,
+            studentId = student.id!!,
             userId = student.userId,
             studentIdNumber = student.studentId,
             firstName = student.firstName,
@@ -51,7 +51,7 @@ class StudentEventPublisher(
      */
     fun publishStudentUpdated(student: Student) {
         val event = StudentUpdatedEvent(
-            studentId = student.id,
+            studentId = student.id!!,
             userId = student.userId,
             gradeLevel = student.gradeLevel,
             enrollmentStatus = student.enrollmentStatus.name

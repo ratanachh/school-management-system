@@ -16,7 +16,7 @@ interface StudentRepository : JpaRepository<Student, UUID> {
     fun findByGradeLevel(gradeLevel: Int): List<Student>
     fun findByEnrollmentStatus(status: EnrollmentStatus): List<Student>
     
-    @Query("SELECT s FROM Student s WHERE s.firstName LIKE %:name% OR s.lastName LIKE %:name%")
+    @Query("SELECT s FROM Student s WHERE s.firstName LIKE %:name% OR s.lastName LIKE %:name% OR CONCAT(s.firstName, ' ', s.lastName) LIKE %:name%")
     fun searchByName(@Param("name") name: String): List<Student>
     
     @Query("SELECT s FROM Student s WHERE s.gradeLevel = :gradeLevel AND s.enrollmentStatus = :status")

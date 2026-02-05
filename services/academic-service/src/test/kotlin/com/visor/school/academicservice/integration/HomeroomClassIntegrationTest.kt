@@ -1,5 +1,6 @@
 package com.visor.school.academicservice.integration
 
+import com.visor.school.academicservice.config.TestConfig
 import com.visor.school.academicservice.model.*
 import com.visor.school.academicservice.repository.ClassRepository
 import com.visor.school.academicservice.repository.TeacherRepository
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.assertThrows
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestConfig::class)
 @Transactional
 class HomeroomClassIntegrationTest @Autowired constructor(
     private val teacherService: TeacherService,
@@ -44,7 +47,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         val homeroomClass = classService.createHomeroomClass(
             className = "Grade 1 Homeroom",
             gradeLevel = 1,
-            homeroomTeacherId = teacher.id,
+            homeroomTeacherId = teacher.id!!,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
             startDate = LocalDate.of(2024, 9, 1)
@@ -54,12 +57,12 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         assertNotNull(homeroomClass)
         assertEquals(ClassType.HOMEROOM, homeroomClass.classType)
         assertEquals(1, homeroomClass.gradeLevel)
-        assertEquals(teacher.id, homeroomClass.homeroomTeacherId)
+        assertEquals(teacher.id!!, homeroomClass.homeroomTeacherId)
         assertNull(homeroomClass.subject)
         assertNull(homeroomClass.classTeacherId)
 
         // Verify persisted
-        val saved = classRepository.findById(homeroomClass.id)
+        val saved = classRepository.findById(homeroomClass.id!!)
         assertTrue(saved.isPresent)
         assertEquals(ClassType.HOMEROOM, saved.get().classType)
     }
@@ -80,7 +83,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         val homeroomClass = classService.createHomeroomClass(
             className = "Grade 6 Homeroom",
             gradeLevel = 6,
-            homeroomTeacherId = teacher.id,
+            homeroomTeacherId = teacher.id!!,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
             startDate = LocalDate.of(2024, 9, 1)
@@ -108,7 +111,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             classService.createHomeroomClass(
                 className = "Invalid Homeroom",
                 gradeLevel = 7, // Invalid: homeroom only for grades 1-6
-                homeroomTeacherId = teacher.id,
+                homeroomTeacherId = teacher.id!!,
                 academicYear = "2024-2025",
                 term = Term.FIRST_TERM,
                 startDate = LocalDate.of(2024, 9, 1)
@@ -131,7 +134,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         classService.createHomeroomClass(
             className = "Grade 3 Homeroom A",
             gradeLevel = 3,
-            homeroomTeacherId = teacher.id,
+            homeroomTeacherId = teacher.id!!,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
             startDate = LocalDate.of(2024, 9, 1)
@@ -142,7 +145,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
             classService.createHomeroomClass(
                 className = "Grade 3 Homeroom B",
                 gradeLevel = 3,
-                homeroomTeacherId = teacher.id,
+                homeroomTeacherId = teacher.id!!,
                 academicYear = "2024-2025",
                 term = Term.FIRST_TERM,
                 startDate = LocalDate.of(2024, 9, 1)
@@ -175,7 +178,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         val grade3Class = classService.createHomeroomClass(
             className = "Grade 3 Homeroom",
             gradeLevel = 3,
-            homeroomTeacherId = teacher1.id,
+            homeroomTeacherId = teacher1.id!!,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
             startDate = LocalDate.of(2024, 9, 1)
@@ -184,7 +187,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         val grade4Class = classService.createHomeroomClass(
             className = "Grade 4 Homeroom",
             gradeLevel = 4,
-            homeroomTeacherId = teacher2.id,
+            homeroomTeacherId = teacher2.id!!,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
             startDate = LocalDate.of(2024, 9, 1)
@@ -195,7 +198,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         assertNotNull(grade4Class)
         assertEquals(3, grade3Class.gradeLevel)
         assertEquals(4, grade4Class.gradeLevel)
-        assertNotEquals(grade3Class.id, grade4Class.id)
+        assertNotEquals(grade3Class.id!!, grade4Class.id!!)
     }
 
     @Test
@@ -214,7 +217,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         val firstTermClass = classService.createHomeroomClass(
             className = "Grade 3 Homeroom - Term 1",
             gradeLevel = 3,
-            homeroomTeacherId = teacher.id,
+            homeroomTeacherId = teacher.id!!,
             academicYear = "2024-2025",
             term = Term.FIRST_TERM,
             startDate = LocalDate.of(2024, 9, 1)
@@ -223,7 +226,7 @@ class HomeroomClassIntegrationTest @Autowired constructor(
         val secondTermClass = classService.createHomeroomClass(
             className = "Grade 3 Homeroom - Term 2",
             gradeLevel = 3,
-            homeroomTeacherId = teacher.id,
+            homeroomTeacherId = teacher.id!!,
             academicYear = "2024-2025",
             term = Term.SECOND_TERM,
             startDate = LocalDate.of(2025, 1, 1)

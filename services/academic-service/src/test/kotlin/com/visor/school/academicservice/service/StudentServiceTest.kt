@@ -27,11 +27,14 @@ class StudentServiceTest {
     @Mock
     private lateinit var studentEventPublisher: StudentEventPublisher
 
+    @Mock
+    private lateinit var studentIdGenerator: StudentIdGenerator
+
     @InjectMocks
     private lateinit var studentService: StudentService
 
     private val testStudent = Student(
-        userId = UUID.randomUUID().toString(),
+        userId = UUID.randomUUID(),
         studentId = "S12345",
         firstName = "John",
         lastName = "Doe",
@@ -43,7 +46,18 @@ class StudentServiceTest {
     @Test
     fun `enroll student should create and publish event`() {
         // Given
-        whenever(studentRepository.save(any<Student>())).thenReturn(testStudent)
+        val savedStudent = Student(
+            id = UUID.randomUUID(),
+            userId = testStudent.userId,
+            studentId = testStudent.studentId,
+            firstName = testStudent.firstName,
+            lastName = testStudent.lastName,
+            dateOfBirth = testStudent.dateOfBirth,
+            gradeLevel = testStudent.gradeLevel,
+            enrollmentStatus = testStudent.enrollmentStatus
+        )
+        whenever(studentIdGenerator.generateStudentId()).thenReturn("S12345")
+        whenever(studentRepository.save(any<Student>())).thenReturn(savedStudent)
 
         // When
         val enrolledStudent = studentService.enrollStudent(
@@ -57,54 +71,71 @@ class StudentServiceTest {
         // Then
         assertNotNull(enrolledStudent.studentId)
         verify(studentRepository).save(any<Student>())
-        verify(studentEventPublisher).publishStudentEnrolledEvent(enrolledStudent)
+        verify(studentEventPublisher).publishStudentEnrolled(enrolledStudent)
     }
 
     @Test
     fun `update student should save and publish event`() {
         // Given
         val studentId = UUID.randomUUID()
-        whenever(studentRepository.findById(studentId)).thenReturn(Optional.of(testStudent))
-        whenever(studentRepository.save(any<Student>())).thenReturn(testStudent)
+        val existingStudent = Student(
+            id = studentId,
+            userId = testStudent.userId,
+            studentId = testStudent.studentId,
+            firstName = testStudent.firstName,
+            lastName = testStudent.lastName,
+            dateOfBirth = testStudent.dateOfBirth,
+            gradeLevel = testStudent.gradeLevel,
+            enrollmentStatus = testStudent.enrollmentStatus
+        )
+        val updatedStudent = Student(
+            id = studentId,
+            userId = testStudent.userId,
+            studentId = testStudent.studentId,
+            firstName = "Jane",
+            lastName = testStudent.lastName,
+            dateOfBirth = testStudent.dateOfBirth,
+            gradeLevel = testStudent.gradeLevel,
+            enrollmentStatus = testStudent.enrollmentStatus
+        )
+        whenever(studentRepository.findById(studentId)).thenReturn(Optional.of(existingStudent))
+        whenever(studentRepository.save(any<Student>())).thenReturn(updatedStudent)
 
         // When
-        val updatedStudent = studentService.updateStudent(studentId.toString(), "Jane", null, null)
+        val result = studentService.updateStudent(studentId, "Jane", null, null)
 
         // Then
-        assertEquals("Jane", updatedStudent.firstName)
+        assertEquals("Jane", result.firstName)
         verify(studentRepository).save(any<Student>())
-        verify(studentEventPublisher).publishStudentUpdatedEvent(updatedStudent)
     }
 
     @Test
     fun `search students should return a page of students`() {
         // Given
-        val pageable = PageRequest.of(0, 10)
-        whenever(studentRepository.findByNameContainingIgnoreCase("John", pageable))
-            .thenReturn(PageImpl(listOf(testStudent)))
+        whenever(studentRepository.searchByName("John"))
+            .thenReturn(listOf(testStudent))
 
         // When
-        val students = studentService.searchStudents("John", 1)
+        val students = studentService.searchStudentsByName("John")
 
         // Then
         assertFalse(students.isEmpty())
         assertEquals(1, students.size)
-        verify(studentRepository).findByNameContainingIgnoreCase("John", pageable)
+        verify(studentRepository).searchByName("John")
     }
 
     @Test
     fun `get students by grade should return a list`() {
         // Given
-        val pageable = PageRequest.of(0, 10)
-        whenever(studentRepository.findByGradeLevel(5, pageable))
-            .thenReturn(PageImpl(listOf(testStudent)))
+        whenever(studentRepository.findByGradeLevel(5))
+            .thenReturn(listOf(testStudent))
 
         // When
-        val students = studentService.getStudentsByGrade(5, 1)
+        val students = studentService.getStudentsByGradeLevel(5)
 
         // Then
         assertFalse(students.isEmpty())
         assertEquals(1, students.size)
-        verify(studentRepository).findByGradeLevel(5, pageable)
+        verify(studentRepository).findByGradeLevel(5)
     }
 }

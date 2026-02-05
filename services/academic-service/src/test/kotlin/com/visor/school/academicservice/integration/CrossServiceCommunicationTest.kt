@@ -1,12 +1,15 @@
 package com.visor.school.academicservice.integration
 
+import com.visor.school.academicservice.config.TestConfig
 import com.visor.school.academicservice.model.EnrollmentStatus
 import com.visor.school.academicservice.service.StudentService
 import org.junit.jupiter.api.Test
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.RabbitMQContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -21,6 +24,7 @@ import org.junit.Rule
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestConfig::class)
 @Testcontainers
 class CrossServiceCommunicationTest @Autowired constructor(
     private val studentService: StudentService,

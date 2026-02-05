@@ -31,7 +31,7 @@ class AcademicRecordEventPublisher(
     fun publishAcademicRecordUpdated(record: AcademicRecord) {
         val event = AcademicRecordUpdatedEvent(
             studentId = record.studentId,
-            academicRecordId = record.id,
+            academicRecordId = record.id!!,
             currentGPA = record.currentGPA,
             cumulativeGPA = record.cumulativeGPA,
             creditsEarned = record.creditsEarned,

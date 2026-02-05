@@ -17,7 +17,8 @@ class TeacherTest {
             hireDate = LocalDate.of(2020, 1, 1)
         )
 
-        assertNotNull(teacher.id)
+        // ID is null until entity is persisted
+        assertNull(teacher.id)
         assertEquals("EMP-2025-001", teacher.employeeId)
         assertEquals(EmploymentStatus.ACTIVE, teacher.employmentStatus)
         assertEquals(2, teacher.subjectSpecializations.size)

@@ -108,7 +108,15 @@ class ClassServiceTest {
             startDate = LocalDate.of(2024, 9, 1),
             endDate = null
         )
-        whenever(teacherRepository.findById(testTeacherId)).thenReturn(Optional.of(mock()))
+        val teacher = Teacher(
+            id = testTeacherId,
+            employeeId = "EMP-001",
+            userId = testTeacherId,
+            subjectSpecializations = listOf("Mathematics"),
+            hireDate = LocalDate.of(2020, 1, 1),
+            employmentStatus = EmploymentStatus.ACTIVE
+        )
+        whenever(teacherRepository.findById(testTeacherId)).thenReturn(Optional.of(teacher))
         whenever(classRepository.findByAcademicYearAndTermAndTypeAndGrade(any(), any(), any(), any()))
             .thenReturn(listOf(existingClass))
 
@@ -153,6 +161,7 @@ class ClassServiceTest {
     fun `should assign class teacher for grades 7-12`() {
         // Given
         val classEntity = Class(
+            id = UUID.randomUUID(),
             className = "Mathematics 101",
             classType = ClassType.SUBJECT,
             subject = "Mathematics",
@@ -175,29 +184,30 @@ class ClassServiceTest {
         )
         val assignment = TeacherAssignment(
             teacherId = testTeacherId,
-            classId = classEntity.id,
+            classId = classEntity.id!!,
             isClassTeacher = false
         )
 
-        whenever(classRepository.findById(classEntity.id)).thenReturn(Optional.of(classEntity))
+        whenever(classRepository.findById(classEntity.id!!)).thenReturn(Optional.of(classEntity))
         whenever(teacherRepository.findById(testTeacherId)).thenReturn(Optional.of(teacher))
-        whenever(teacherAssignmentRepository.findByTeacherIdAndClassId(testTeacherId, classEntity.id))
+        whenever(teacherAssignmentRepository.findByTeacherIdAndClassId(testTeacherId, classEntity.id!!))
             .thenReturn(listOf(assignment))
-        whenever(teacherAssignmentRepository.findClassTeacherByClassId(classEntity.id))
+        whenever(teacherAssignmentRepository.findClassTeacherByClassId(classEntity.id!!))
             .thenReturn(emptyList())
 
         // When
-        val result = classService.assignClassTeacher(classEntity.id, testTeacherId)
+        val result = classService.assignClassTeacher(classEntity.id!!, testTeacherId)
 
         // Then
         assertNotNull(result)
-        verify(classRepository).findById(classEntity.id)
+        verify(classRepository).findById(classEntity.id!!)
     }
 
     @Test
     fun `should throw exception when assigning class teacher to grades 1-6`() {
         // Given
         val classEntity = Class(
+            id = UUID.randomUUID(),
             className = "Grade 3 Homeroom",
             classType = ClassType.HOMEROOM,
             subject = null,
@@ -210,11 +220,11 @@ class ClassServiceTest {
             startDate = LocalDate.of(2024, 9, 1),
             endDate = null
         )
-        whenever(classRepository.findById(classEntity.id)).thenReturn(Optional.of(classEntity))
+        whenever(classRepository.findById(classEntity.id!!)).thenReturn(Optional.of(classEntity))
 
         // When & Then
         assertThrows<IllegalArgumentException> {
-            classService.assignClassTeacher(classEntity.id, testTeacherId)
+            classService.assignClassTeacher(classEntity.id!!, testTeacherId)
         }
     }
 
@@ -222,6 +232,7 @@ class ClassServiceTest {
     fun `should throw exception when teacher not assigned to class`() {
         // Given
         val classEntity = Class(
+            id = UUID.randomUUID(),
             className = "Mathematics 101",
             classType = ClassType.SUBJECT,
             subject = "Mathematics",
@@ -243,14 +254,14 @@ class ClassServiceTest {
             employmentStatus = EmploymentStatus.ACTIVE
         )
 
-        whenever(classRepository.findById(classEntity.id)).thenReturn(Optional.of(classEntity))
+        whenever(classRepository.findById(classEntity.id!!)).thenReturn(Optional.of(classEntity))
         whenever(teacherRepository.findById(testTeacherId)).thenReturn(Optional.of(teacher))
-        whenever(teacherAssignmentRepository.findByTeacherIdAndClassId(testTeacherId, classEntity.id))
+        whenever(teacherAssignmentRepository.findByTeacherIdAndClassId(testTeacherId, classEntity.id!!))
             .thenReturn(emptyList())
 
         // When & Then
         assertThrows<IllegalArgumentException> {
-            classService.assignClassTeacher(classEntity.id, testTeacherId)
+            classService.assignClassTeacher(classEntity.id!!, testTeacherId)
         }
     }
 
@@ -258,6 +269,7 @@ class ClassServiceTest {
     fun `should update class status`() {
         // Given
         val classEntity = Class(
+            id = UUID.randomUUID(),
             className = "Test Class",
             classType = ClassType.SUBJECT,
             subject = "Mathematics",
@@ -270,11 +282,11 @@ class ClassServiceTest {
             startDate = LocalDate.of(2024, 9, 1),
             endDate = null
         )
-        whenever(classRepository.findById(classEntity.id)).thenReturn(Optional.of(classEntity))
+        whenever(classRepository.findById(classEntity.id!!)).thenReturn(Optional.of(classEntity))
         whenever(classRepository.save(any())).thenAnswer { it.arguments[0] as Class }
 
         // When
-        val result = classService.updateClassStatus(classEntity.id, ClassStatus.IN_PROGRESS)
+        val result = classService.updateClassStatus(classEntity.id!!, ClassStatus.IN_PROGRESS)
 
         // Then
         assertEquals(ClassStatus.IN_PROGRESS, result.status)

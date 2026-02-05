@@ -1,5 +1,6 @@
 package com.visor.school.academicservice.integration
 
+import com.visor.school.academicservice.config.TestConfig
 import com.visor.school.academicservice.model.*
 import com.visor.school.academicservice.repository.AcademicRecordRepository
 import com.visor.school.academicservice.service.AcademicRecordService
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -18,6 +20,7 @@ import java.util.UUID
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestConfig::class)
 @Transactional
 class TranscriptGenerationIntegrationTest @Autowired constructor(
     private val academicRecordService: AcademicRecordService,

@@ -5,9 +5,12 @@ import com.visor.school.academicservice.controller.StudentController
 import com.visor.school.academicservice.model.Student
 import com.visor.school.academicservice.model.EnrollmentStatus
 import com.visor.school.academicservice.service.StudentService
-import io.mockk.every
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
@@ -18,6 +21,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @WebMvcTest(StudentController::class)
+@AutoConfigureMockMvc(addFilters = false)
 class StudentControllerContractTest @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper
@@ -29,13 +33,25 @@ class StudentControllerContractTest @Autowired constructor(
     @Test
     fun `enroll student should return 201`() {
         // Given
+        val userId = UUID.randomUUID()
         val request = mapOf(
-            "userId" to UUID.randomUUID().toString(),
+            "userId" to userId.toString(),
             "firstName" to "John",
             "lastName" to "Doe",
             "dateOfBirth" to "2010-01-01",
             "gradeLevel" to 5
         )
+        val mockStudent = Student(
+            id = UUID.randomUUID(),
+            userId = userId,
+            studentId = "S12345",
+            firstName = "John",
+            lastName = "Doe",
+            dateOfBirth = LocalDate.of(2010, 1, 1),
+            gradeLevel = 5,
+            enrollmentStatus = EnrollmentStatus.ENROLLED
+        )
+        whenever(studentService.enrollStudent(any(), any(), any(), any(), any(), anyOrNull(), anyOrNull())).thenReturn(mockStudent)
 
         // When & Then
         mockMvc.perform(
@@ -53,7 +69,7 @@ class StudentControllerContractTest @Autowired constructor(
     fun `search students should return students`() {
         // Given
         val searchQuery = "John"
-        every { studentService.searchStudents(searchQuery, 1) } returns emptyList<Student>()
+        whenever(studentService.searchStudentsByName(searchQuery)).thenReturn(emptyList())
 
         // When & Then
         mockMvc.perform(
@@ -70,15 +86,16 @@ class StudentControllerContractTest @Autowired constructor(
         // Given
         val studentId = UUID.randomUUID()
         val mockStudent = Student(
-            userId = UUID.randomUUID().toString(),
-            studentId = "",
-            firstName = "",
-            lastName = "",
+            id = studentId,
+            userId = UUID.randomUUID(),
+            studentId = "S12345",
+            firstName = "John",
+            lastName = "Doe",
             dateOfBirth = LocalDate.now(),
-            gradeLevel = 0,
+            gradeLevel = 5,
             enrollmentStatus = EnrollmentStatus.ENROLLED
         )
-        every { studentService.getStudentByStudentId(studentId.toString()) } returns mockStudent
+        whenever(studentService.getStudentById(studentId)).thenReturn(mockStudent)
 
         // When & Then
         mockMvc.perform(
@@ -97,6 +114,17 @@ class StudentControllerContractTest @Autowired constructor(
             "lastName" to "Name",
             "gradeLevel" to 6
         )
+        val mockStudent = Student(
+            id = studentId,
+            userId = UUID.randomUUID(),
+            studentId = "S12345",
+            firstName = "Updated",
+            lastName = "Name",
+            dateOfBirth = LocalDate.of(2010, 1, 1),
+            gradeLevel = 6,
+            enrollmentStatus = EnrollmentStatus.ENROLLED
+        )
+        whenever(studentService.updateStudent(any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(mockStudent)
 
         // When & Then
         mockMvc.perform(
@@ -133,7 +161,7 @@ class StudentControllerContractTest @Autowired constructor(
     fun `get students by grade should return students`() {
         // Given
         val gradeLevel = 5
-        every { studentService.getStudentsByGrade(gradeLevel, 1) } returns emptyList<Student>()
+        whenever(studentService.getStudentsByGradeLevel(gradeLevel)).thenReturn(emptyList())
 
         // When & Then
         mockMvc.perform(

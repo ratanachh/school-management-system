@@ -256,7 +256,7 @@ data class StudentResponse(
     companion object {
         fun from(student: Student): StudentResponse {
             return StudentResponse(
-                id = student.id,
+                id = student.id!!,
                 studentId = student.studentId,
                 userId = student.userId,
                 firstName = student.firstName,

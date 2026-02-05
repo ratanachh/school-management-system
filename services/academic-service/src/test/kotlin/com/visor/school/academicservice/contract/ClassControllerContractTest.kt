@@ -7,9 +7,12 @@ import com.visor.school.academicservice.model.ClassStatus
 import com.visor.school.academicservice.model.ClassType
 import com.visor.school.academicservice.model.Term
 import com.visor.school.academicservice.service.ClassService
-import io.mockk.every
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
@@ -20,6 +23,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @WebMvcTest(ClassController::class)
+@AutoConfigureMockMvc(addFilters = false)
 class ClassControllerContractTest @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper
@@ -31,14 +35,27 @@ class ClassControllerContractTest @Autowired constructor(
     @Test
     fun `create homeroom class should return 201`() {
         // Given
+        val homeroomTeacherId = UUID.randomUUID()
         val request = mapOf(
             "className" to "Grade 3 Homeroom",
             "gradeLevel" to 3,
-            "homeroomTeacherId" to UUID.randomUUID().toString(),
+            "homeroomTeacherId" to homeroomTeacherId.toString(),
             "academicYear" to "2024-2025",
             "term" to Term.FIRST_TERM.name,
             "startDate" to "2024-09-01"
         )
+        val mockClass = Class(
+            id = UUID.randomUUID(),
+            className = "Grade 3 Homeroom",
+            classType = ClassType.HOMEROOM,
+            gradeLevel = 3,
+            homeroomTeacherId = homeroomTeacherId,
+            academicYear = "2024-2025",
+            term = Term.FIRST_TERM,
+            startDate = LocalDate.of(2024, 9, 1),
+            status = ClassStatus.SCHEDULED
+        )
+        whenever(classService.createHomeroomClass(any(), any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(mockClass)
 
         // When & Then
         mockMvc.perform(
@@ -84,6 +101,18 @@ class ClassControllerContractTest @Autowired constructor(
             "term" to Term.FIRST_TERM.name,
             "startDate" to "2024-09-01"
         )
+        val mockClass = Class(
+            id = UUID.randomUUID(),
+            className = "Mathematics 101",
+            classType = ClassType.SUBJECT,
+            subject = "Mathematics",
+            gradeLevel = 10,
+            academicYear = "2024-2025",
+            term = Term.FIRST_TERM,
+            startDate = LocalDate.of(2024, 9, 1),
+            status = ClassStatus.SCHEDULED
+        )
+        whenever(classService.createSubjectClass(any(), any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(mockClass)
 
         // When & Then
         mockMvc.perform(
@@ -101,9 +130,24 @@ class ClassControllerContractTest @Autowired constructor(
     fun `assign class teacher should return 200`() {
         // Given
         val classId = UUID.randomUUID()
+        val teacherId = UUID.randomUUID()
         val request = mapOf(
-            "teacherId" to UUID.randomUUID().toString()
+            "teacherId" to teacherId.toString(),
+            "assignedBy" to UUID.randomUUID().toString()
         )
+        val mockClass = Class(
+            id = classId,
+            className = "Mathematics 101",
+            classType = ClassType.SUBJECT,
+            subject = "Mathematics",
+            gradeLevel = 10,
+            classTeacherId = teacherId,
+            academicYear = "2024-2025",
+            term = Term.FIRST_TERM,
+            startDate = LocalDate.of(2024, 9, 1),
+            status = ClassStatus.SCHEDULED
+        )
+        whenever(classService.assignClassTeacher(any(), any(), any())).thenReturn(mockClass)
 
         // When & Then
         mockMvc.perform(
@@ -131,7 +175,7 @@ class ClassControllerContractTest @Autowired constructor(
             status = ClassStatus.SCHEDULED
 
         )
-        every { classService.getClassById(classId.toString()) } returns mockClass
+        whenever(classService.getClassById(classId)).thenReturn(mockClass)
 
         // When & Then
         mockMvc.perform(
@@ -145,7 +189,7 @@ class ClassControllerContractTest @Autowired constructor(
     fun `get classes by grade should return classes`() {
         // Given
         val gradeLevel = 5
-        every { classService.getClassesByGrade(gradeLevel, 1) } returns emptyList<Class>()
+        whenever(classService.getClassesByGradeLevel(gradeLevel)).thenReturn(emptyList())
 
         // When & Then
         mockMvc.perform(
@@ -161,6 +205,18 @@ class ClassControllerContractTest @Autowired constructor(
         // Given
         val classId = UUID.randomUUID()
         val request = mapOf("status" to ClassStatus.IN_PROGRESS.name)
+        val mockClass = Class(
+            id = classId,
+            className = "Test Class",
+            classType = ClassType.SUBJECT,
+            subject = "Mathematics",
+            gradeLevel = 10,
+            academicYear = "2024-2025",
+            term = Term.FIRST_TERM,
+            startDate = LocalDate.of(2024, 9, 1),
+            status = ClassStatus.IN_PROGRESS
+        )
+        whenever(classService.updateClassStatus(any(), any())).thenReturn(mockClass)
 
         // When & Then
         mockMvc.perform(

@@ -19,7 +19,7 @@ import java.util.UUID
 class Class(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 
     @Column(name = "class_name", nullable = false)
     val className: String,

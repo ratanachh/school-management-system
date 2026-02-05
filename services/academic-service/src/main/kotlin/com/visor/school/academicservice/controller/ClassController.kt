@@ -237,7 +237,7 @@ data class ClassResponse(
     companion object {
         fun from(classEntity: Class): ClassResponse {
             return ClassResponse(
-                id = classEntity.id,
+                id = classEntity.id!!,
                 className = classEntity.className,
                 classType = classEntity.classType.name,
                 subject = classEntity.subject,

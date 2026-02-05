@@ -134,7 +134,7 @@ data class TeacherResponse(
     companion object {
         fun from(teacher: Teacher): TeacherResponse {
             return TeacherResponse(
-                id = teacher.id,
+                id = teacher.id!!,
                 employeeId = teacher.employeeId,
                 userId = teacher.userId,
                 qualifications = teacher.qualifications,

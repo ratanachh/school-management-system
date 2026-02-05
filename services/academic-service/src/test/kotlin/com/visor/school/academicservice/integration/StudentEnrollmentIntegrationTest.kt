@@ -1,5 +1,6 @@
 package com.visor.school.academicservice.integration
 
+import com.visor.school.academicservice.config.TestConfig
 import com.visor.school.academicservice.model.Address
 import com.visor.school.academicservice.model.EnrollmentStatus
 import com.visor.school.academicservice.repository.StudentRepository
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.assertThrows
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestConfig::class)
 @Transactional
 class StudentEnrollmentIntegrationTest @Autowired constructor(
     private val studentService: StudentService,
@@ -46,7 +49,7 @@ class StudentEnrollmentIntegrationTest @Autowired constructor(
 
         // Then
         assertNotNull(student)
-        assertNotNull(student.id)
+        assertNotNull(student.id!!)
         assertNotNull(student.studentId)
         assertFalse(student.studentId.isBlank())
         assertEquals(firstName, student.firstName)
@@ -56,7 +59,7 @@ class StudentEnrollmentIntegrationTest @Autowired constructor(
         assertEquals(EnrollmentStatus.ENROLLED, student.enrollmentStatus)
 
         // Verify student is persisted
-        val savedStudent = studentRepository.findById(student.id)
+        val savedStudent = studentRepository.findById(student.id!!)
         assertTrue(savedStudent.isPresent)
         assertEquals(firstName, savedStudent.get().firstName)
     }

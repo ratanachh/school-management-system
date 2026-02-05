@@ -14,7 +14,8 @@ class TeacherAssignmentTest {
             isClassTeacher = false
         )
 
-        assertNotNull(assignment.id)
+        // ID is null until entity is persisted
+        assertNull(assignment.id)
         assertNotNull(assignment.teacherId)
         assertNotNull(assignment.classId)
         assertFalse(assignment.isClassTeacher)
@@ -64,8 +65,9 @@ class TeacherAssignmentTest {
         )
 
         // Both should be created, but in database would have unique constraint
-        assertNotNull(assignment1.id)
-        assertNotNull(assignment2.id)
+        // IDs are null until entities are persisted
+        assertNull(assignment1.id)
+        assertNull(assignment2.id)
         assertEquals(teacherId, assignment1.teacherId)
         assertEquals(teacherId, assignment2.teacherId)
         assertEquals(classId, assignment1.classId)
