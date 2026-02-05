@@ -3,19 +3,22 @@ package com.visor.school.academicservice.util;
 import com.visor.school.common.api.ApiResponse;
 
 /**
- * Helper class to work around Kotlin's default parameter issues when calling from Java
+ * Helper for building ApiResponse from academic-service (delegates to common ApiResponse).
  */
-public class ApiResponseHelper {
-    
+public final class ApiResponseHelper {
+
+    private ApiResponseHelper() {
+    }
+
     public static <T> ApiResponse<T> success(T data) {
-        return ApiResponse.Companion.success(data, null);
+        return ApiResponse.success(data);
     }
-    
+
     public static <T> ApiResponse<T> success(T data, String message) {
-        return ApiResponse.Companion.success(data, message);
+        return ApiResponse.success(data, message);
     }
-    
+
     public static <T> ApiResponse<T> error(String message) {
-        return ApiResponse.Companion.error(message);
+        return ApiResponse.error(message);
     }
 }

@@ -34,11 +34,12 @@ class ValidationAdvice : GlobalExceptionHandler() {
         }
 
         val errorResponse = ErrorResponse(
-            error = "VALIDATION_ERROR",
-            message = "Validation failed for request",
-            timestamp = Instant.now(),
-            status = HttpStatus.BAD_REQUEST.value(),
-            details = errors
+            "VALIDATION_ERROR",
+            "Validation failed for request",
+            Instant.now(),
+            null,
+            HttpStatus.BAD_REQUEST.value(),
+            errors
         )
 
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
@@ -95,11 +96,11 @@ class ValidationAdvice : GlobalExceptionHandler() {
         }
 
         val errorResponse = ErrorResponse(
-            error = errorCode,
-            message = message,
-            timestamp = Instant.now(),
-            path = request.getDescription(false).removePrefix("uri="),
-            status = httpStatus.value()
+            errorCode,
+            message,
+            Instant.now(),
+            request.getDescription(false).removePrefix("uri="),
+            httpStatus.value()
         )
 
         return ResponseEntity(errorResponse, httpStatus)
@@ -112,11 +113,11 @@ class ValidationAdvice : GlobalExceptionHandler() {
     ): ResponseEntity<ErrorResponse> {
         logger.warn("User already exists: ${ex.message}")
         val errorResponse = ErrorResponse(
-            error = "USER_ALREADY_EXISTS",
-            message = ex.message ?: "User already exists",
-            timestamp = Instant.now(),
-            path = request.getDescription(false).removePrefix("uri="),
-            status = HttpStatus.CONFLICT.value()
+            "USER_ALREADY_EXISTS",
+            ex.message ?: "User already exists",
+            Instant.now(),
+            request.getDescription(false).removePrefix("uri="),
+            HttpStatus.CONFLICT.value()
         )
         return ResponseEntity(errorResponse, HttpStatus.CONFLICT)
     }

@@ -142,10 +142,10 @@ data class AttendanceMarkedEvent(
     val date: java.time.LocalDate,
     val status: String,
     val markedBy: UUID?,
-    override val eventId: UUID = UUID.randomUUID(),
-    override val timestamp: Instant = Instant.now(),
-    override val eventType: String = "AttendanceMarkedEvent"
-) : BaseEvent() {
+    val eventIdVal: UUID = UUID.randomUUID(),
+    val timestampVal: Instant = Instant.now(),
+    val eventTypeVal: String = "AttendanceMarkedEvent"
+) : BaseEvent(eventIdVal, timestampVal, "1.0", eventTypeVal) {
     override fun getAggregateId(): UUID = attendanceRecordId
     override fun getAggregateType(): String = "AttendanceRecord"
 }
@@ -159,10 +159,10 @@ data class SessionDelegatedEvent(
     val date: java.time.LocalDate,
     val delegatedTo: UUID,
     val createdBy: UUID,
-    override val eventId: UUID = UUID.randomUUID(),
-    override val timestamp: Instant = Instant.now(),
-    override val eventType: String = "SessionDelegatedEvent"
-) : BaseEvent() {
+    val eventIdVal: UUID = UUID.randomUUID(),
+    val timestampVal: Instant = Instant.now(),
+    val eventTypeVal: String = "SessionDelegatedEvent"
+) : BaseEvent(eventIdVal, timestampVal, "1.0", eventTypeVal) {
     override fun getAggregateId(): UUID = sessionId
     override fun getAggregateType(): String = "AttendanceSession"
 }
@@ -176,10 +176,10 @@ data class SessionCollectedEvent(
     val date: java.time.LocalDate,
     val collectedBy: UUID,
     val createdBy: UUID,
-    override val eventId: UUID = UUID.randomUUID(),
-    override val timestamp: Instant = Instant.now(),
-    override val eventType: String = "SessionCollectedEvent"
-) : BaseEvent() {
+    val eventIdVal: UUID = UUID.randomUUID(),
+    val timestampVal: Instant = Instant.now(),
+    val eventTypeVal: String = "SessionCollectedEvent"
+) : BaseEvent(eventIdVal, timestampVal, "1.0", eventTypeVal) {
     override fun getAggregateId(): UUID = sessionId
     override fun getAggregateType(): String = "AttendanceSession"
 }
@@ -193,10 +193,10 @@ data class SessionApprovedEvent(
     val date: java.time.LocalDate,
     val approvedBy: UUID,
     val collectedBy: UUID,
-    override val eventId: UUID = UUID.randomUUID(),
-    override val timestamp: Instant = Instant.now(),
-    override val eventType: String = "SessionApprovedEvent"
-) : BaseEvent() {
+    val eventIdVal: UUID = UUID.randomUUID(),
+    val timestampVal: Instant = Instant.now(),
+    val eventTypeVal: String = "SessionApprovedEvent"
+) : BaseEvent(eventIdVal, timestampVal, "1.0", eventTypeVal) {
     override fun getAggregateId(): UUID = sessionId
     override fun getAggregateType(): String = "AttendanceSession"
 }
@@ -211,10 +211,10 @@ data class SessionRejectedEvent(
     val rejectedBy: UUID,
     val rejectionReason: String,
     val collectedBy: UUID,
-    override val eventId: UUID = UUID.randomUUID(),
-    override val timestamp: Instant = Instant.now(),
-    override val eventType: String = "SessionRejectedEvent"
-) : BaseEvent() {
+    val eventIdVal: UUID = UUID.randomUUID(),
+    val timestampVal: Instant = Instant.now(),
+    val eventTypeVal: String = "SessionRejectedEvent"
+) : BaseEvent(eventIdVal, timestampVal, "1.0", eventTypeVal) {
     override fun getAggregateId(): UUID = sessionId
     override fun getAggregateType(): String = "AttendanceSession"
 }

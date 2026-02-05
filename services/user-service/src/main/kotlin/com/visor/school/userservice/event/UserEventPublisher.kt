@@ -181,10 +181,10 @@ data class UserCreatedEvent(
     val lastName: String,
     val keycloakId: String
 ) : BaseEvent(
-    eventId = UUID.randomUUID(),
-    timestamp = Instant.now(),
-    version = "1.0",
-    eventType = "UserCreatedEvent"
+    UUID.randomUUID(),
+    Instant.now(),
+    "1.0",
+    "UserCreatedEvent"
 ) {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
@@ -199,10 +199,10 @@ data class UserUpdatedEvent(
     val roles: Set<String>,
     val accountStatus: String
 ) : BaseEvent(
-    eventId = UUID.randomUUID(),
-    timestamp = Instant.now(),
-    version = "1.0",
-    eventType = "UserUpdatedEvent"
+    UUID.randomUUID(),
+    Instant.now(),
+    "1.0",
+    "UserUpdatedEvent"
 ) {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
@@ -215,10 +215,10 @@ data class EmailVerifiedEvent(
     val userId: UUID,
     val email: String
 ) : BaseEvent(
-    eventId = UUID.randomUUID(),
-    timestamp = Instant.now(),
-    version = "1.0",
-    eventType = "EmailVerifiedEvent"
+    UUID.randomUUID(),
+    Instant.now(),
+    "1.0",
+    "EmailVerifiedEvent"
 ) {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
