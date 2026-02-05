@@ -12,10 +12,13 @@ data class ApiResponse<T>(
     val timestamp: Instant = Instant.now()
 ) {
     companion object {
+        @JvmOverloads
+        @JvmStatic
         fun <T> success(data: T, message: String? = null): ApiResponse<T> {
             return ApiResponse(true, data, message)
         }
 
+        @JvmStatic
         fun <T> error(message: String): ApiResponse<T> {
             return ApiResponse(false, null, message)
         }
