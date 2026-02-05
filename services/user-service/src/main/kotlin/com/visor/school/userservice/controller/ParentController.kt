@@ -53,7 +53,7 @@ class ParentController(
      * Get all children (students) for a parent
      */
     @GetMapping("/{parentId}/students")
-    @PreAuthorize("hasRole('ADMINISTRATOR') or #parentId == authentication.principal.id")
+    @PreAuthorize("hasRole('ADMINISTRATOR') or @securityContextService.isCurrentUserId(#parentId)")
     fun getChildren(@PathVariable parentId: UUID): ResponseEntity<ApiResponse<List<ParentStudentResponse>>> {
         val parents = parentService.getChildrenByParent(parentId)
         

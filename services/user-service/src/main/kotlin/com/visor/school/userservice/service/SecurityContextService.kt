@@ -127,6 +127,15 @@ class SecurityContextService(
     fun canManageAdministrators(): Boolean {
         return isSuperAdmin() || hasPermission("MANAGE_ADMINISTRATORS")
     }
+
+    /**
+     * Check if the provided user ID matches the current authenticated user's ID
+     * Safe check that resolves the current user entity from DB via Keycloak ID
+     */
+    fun isCurrentUserId(userId: UUID): Boolean {
+        val currentUser = getCurrentUser() ?: return false
+        return currentUser.id == userId
+    }
 }
 
 

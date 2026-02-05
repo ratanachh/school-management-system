@@ -9,13 +9,9 @@ import java.util.UUID
 abstract class BaseEvent(
     open val eventId: UUID = UUID.randomUUID(),
     open val timestamp: Instant = Instant.now(),
-    open val version: String = "1.0"
+    open val version: String = "1.0",
+    open val eventType: String = ""
 ) {
-    /**
-     * Event type derived from the concrete class name
-     */
-    abstract val eventType: String
-
     abstract fun getAggregateId(): UUID
     abstract fun getAggregateType(): String
 }

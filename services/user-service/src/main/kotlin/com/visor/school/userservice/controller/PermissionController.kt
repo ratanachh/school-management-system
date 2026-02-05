@@ -96,7 +96,7 @@ class PermissionController(
      * Get permissions for a user
      */
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasRole('ADMINISTRATOR') or #userId == authentication.principal.id")
+    @PreAuthorize("hasRole('ADMINISTRATOR') or @securityContextService.isCurrentUserId(#userId)")
     fun getUserPermissions(@PathVariable userId: UUID): ResponseEntity<ApiResponse<List<PermissionResponse>>> {
         val permissions = permissionService.getByUser(userId)
         return ResponseEntity.ok(ApiResponse.success(permissions.map { PermissionResponse.from(it) }))

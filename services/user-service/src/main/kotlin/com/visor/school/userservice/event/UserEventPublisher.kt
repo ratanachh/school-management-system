@@ -180,8 +180,12 @@ data class UserCreatedEvent(
     val firstName: String,
     val lastName: String,
     val keycloakId: String
-) : BaseEvent(), java.io.Serializable {
-    override val eventType: String = "UserCreatedEvent"
+) : BaseEvent(
+    eventId = UUID.randomUUID(),
+    timestamp = Instant.now(),
+    version = "1.0",
+    eventType = "UserCreatedEvent"
+) {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }
@@ -194,8 +198,12 @@ data class UserUpdatedEvent(
     val email: String,
     val roles: Set<String>,
     val accountStatus: String
-) : BaseEvent(), java.io.Serializable {
-    override val eventType: String = "UserUpdatedEvent"
+) : BaseEvent(
+    eventId = UUID.randomUUID(),
+    timestamp = Instant.now(),
+    version = "1.0",
+    eventType = "UserUpdatedEvent"
+) {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }
@@ -206,8 +214,12 @@ data class UserUpdatedEvent(
 data class EmailVerifiedEvent(
     val userId: UUID,
     val email: String
-) : BaseEvent(), java.io.Serializable {
-    override val eventType: String = "EmailVerifiedEvent"
+) : BaseEvent(
+    eventId = UUID.randomUUID(),
+    timestamp = Instant.now(),
+    version = "1.0",
+    eventType = "EmailVerifiedEvent"
+) {
     override fun getAggregateId(): UUID = userId
     override fun getAggregateType(): String = "User"
 }

@@ -23,7 +23,12 @@ class UserController(
     /**
      * Get user by ID
      */
+    /**
+     * Get user by ID
+     * Authorization: SUPER_ADMIN, MANAGE_ADMINISTRATORS, or Self
+     */
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasPermission(null, 'MANAGE_ADMINISTRATORS') or @userService.canManageUser(#id) or @securityContextService.isCurrentUserId(#id)")
     fun getUser(@PathVariable id: UUID): ResponseEntity<ApiResponse<UserResponse>> {
         val user = userService.findById(id)
             ?: return ResponseEntity.notFound().build()
@@ -35,8 +40,13 @@ class UserController(
      * Update user information
      * Authorization: SUPER_ADMIN or MANAGE_ADMINISTRATORS permission required for ADMINISTRATOR users
      */
+    /**
+     * Update user information
+     * Authorization: SUPER_ADMIN, MANAGE_ADMINISTRATORS, or Self
+     * Note: Role updates are still restricted in the service layer
+     */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasPermission(null, 'MANAGE_ADMINISTRATORS') or @userService.canManageUser(#id)")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasPermission(null, 'MANAGE_ADMINISTRATORS') or @userService.canManageUser(#id) or @securityContextService.isCurrentUserId(#id)")
     fun updateUser(
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateUserRequest
@@ -56,8 +66,12 @@ class UserController(
      * Update account status
      * Authorization: SUPER_ADMIN or MANAGE_ADMINISTRATORS permission required for ADMINISTRATOR users
      */
+    /**
+     * Update account status
+     * Authorization: SUPER_ADMIN, MANAGE_ADMINISTRATORS, or Self (though typically users shouldn't change their own status to active without verification)
+     */
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasPermission(null, 'MANAGE_ADMINISTRATORS') or @userService.canManageUser(#id)")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasPermission(null, 'MANAGE_ADMINISTRATORS') or @userService.canManageUser(#id) or @securityContextService.isCurrentUserId(#id)")
     fun updateAccountStatus(
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateStatusRequest
