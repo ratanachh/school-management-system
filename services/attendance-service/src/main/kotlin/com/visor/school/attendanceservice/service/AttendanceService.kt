@@ -1,5 +1,6 @@
 package com.visor.school.attendanceservice.service
 
+import com.visor.school.attendanceservice.event.AttendanceEventPublisher
 import com.visor.school.attendanceservice.model.AttendanceRecord
 import com.visor.school.attendanceservice.model.AttendanceSession
 import com.visor.school.attendanceservice.model.AttendanceSessionStatus

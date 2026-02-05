@@ -99,7 +99,7 @@ class AttendanceEventPublisher(
             classId = session.classId,
             date = session.date,
             approvedBy = approvedBy,
-            collectedBy = session.delegatedTo
+            collectedBy = session.delegatedTo!!
         )
 
         try {
@@ -120,7 +120,7 @@ class AttendanceEventPublisher(
             date = session.date,
             rejectedBy = rejectedBy,
             rejectionReason = reason,
-            collectedBy = session.delegatedTo
+            collectedBy = session.delegatedTo!!
         )
 
         try {

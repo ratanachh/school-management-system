@@ -14,6 +14,9 @@ import java.util.UUID
 interface AttendanceRepository : JpaRepository<AttendanceRecord, UUID> {
     fun findByStudentIdAndClassIdAndDate(studentId: UUID, classId: UUID, date: LocalDate): Optional<AttendanceRecord>
     
+    @Query("SELECT ar FROM AttendanceRecord ar WHERE ar.classId = :classId")
+    fun findByClassId(@Param("classId") classId: UUID): List<AttendanceRecord>
+    
     @Query("SELECT ar FROM AttendanceRecord ar WHERE ar.classId = :classId AND ar.date = :date")
     fun findByClassIdAndDate(@Param("classId") classId: UUID, @Param("date") date: LocalDate): List<AttendanceRecord>
     

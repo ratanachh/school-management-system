@@ -27,7 +27,7 @@ class AttendanceControllerContractTest @Autowired constructor(
     private lateinit var attendanceService: AttendanceService
 
     @Test
-    fun `POST /api/v1/attendance should mark attendance directly and return 201`() {
+    fun `POST api-v1-attendance should mark attendance directly and return 201`() {
         // Given
         val request = mapOf(
             "studentId" to UUID.randomUUID().toString(),
@@ -50,7 +50,7 @@ class AttendanceControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/attendance/sessions should create attendance session and return 201`() {
+    fun `POST api-v1-attendance-sessions should create attendance session and return 201`() {
         // Given
         val request = mapOf(
             "classId" to UUID.randomUUID().toString(),
@@ -69,7 +69,7 @@ class AttendanceControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/attendance/sessions/{sessionId}/delegate should delegate to class leader and return 200`() {
+    fun `POST api-v1-attendance-sessions-sessionId-delegate should delegate to class leader and return 200`() {
         // Given
         val sessionId = UUID.randomUUID()
         val request = mapOf(
@@ -89,7 +89,7 @@ class AttendanceControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/attendance/sessions/{sessionId}/collect should collect attendance and return 200`() {
+    fun `POST api-v1-attendance-sessions-sessionId-collect should collect attendance and return 200`() {
         // Given
         val sessionId = UUID.randomUUID()
         val request = mapOf(
@@ -115,7 +115,7 @@ class AttendanceControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `POST /api/v1/attendance/sessions/{sessionId}/approve should approve session and return 200`() {
+    fun `POST api-v1-attendance-sessions-sessionId-approve should approve session and return 200`() {
         // Given
         val sessionId = UUID.randomUUID()
         val request = mapOf<String, String>()
@@ -132,7 +132,7 @@ class AttendanceControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/attendance/class/{classId} should return attendance records`() {
+    fun `GET api-v1-attendance-class-classId should return attendance records`() {
         // Given
         val classId = UUID.randomUUID()
 
@@ -146,7 +146,7 @@ class AttendanceControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/attendance/student/{studentId} should return student attendance records`() {
+    fun `GET api-v1-attendance-student-studentId should return student attendance records`() {
         // Given
         val studentId = UUID.randomUUID()
 
@@ -160,7 +160,7 @@ class AttendanceControllerContractTest @Autowired constructor(
     }
 
     @Test
-    fun `GET /api/v1/reports/class/{classId} should return attendance report`() {
+    fun `GET api-v1-reports-class-classId should return attendance report`() {
         // Given
         val classId = UUID.randomUUID()
 
