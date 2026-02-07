@@ -63,16 +63,16 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_SERVER_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:school-management}
+          issuer-uri: ${KEYCLOAK_SERVER_URL}/realms/${KEYCLOAK_REALM}
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${DISCOVERY_SERVER_URL}/eureka/
 
 keycloak:
-  realm: ${KEYCLOAK_REALM:school-management}
-  auth-server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8080}
+  realm: ${KEYCLOAK_REALM}
+  auth-server-url: ${KEYCLOAK_SERVER_URL}
   resource: ${KEYCLOAK_CLIENT_ID}
 
 management:
