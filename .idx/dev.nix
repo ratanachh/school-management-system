@@ -9,6 +9,7 @@
     pkgs.jdk25
     pkgs.htop
     pkgs.inetutils
+    pkgs.tailscale
   ];
   services.docker.enable = true;
   # to change directory oof docker available storage.
