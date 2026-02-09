@@ -7,7 +7,7 @@ keycloak:
   initializer:
     enabled: ${KEYCLOAK_INITIALIZER_ENABLED:false}
     admin:
-      url: ${KEYCLOAK_URL:http://localhost:8080}
+      url: ${KEYCLOAK_SERVER_URL:http://localhost:8080}
       username: ${KEYCLOAK_ADMIN:admin}
       password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
       client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}

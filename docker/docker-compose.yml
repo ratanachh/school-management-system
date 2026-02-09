@@ -84,7 +84,7 @@ services:
       KC_DB_USERNAME: school_user
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       # configure with hostname
-      KC_HOSTNAME_URL: ${KEYCLOAK_URL}
+      KC_HOSTNAME_URL: ${KEYCLOAK_SERVER_URL}
       # configure with relative
       #KC_HTTP_RELATIVE_PATH: ${KEYCLOAK_RELATIVE_PATH}
       #KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
