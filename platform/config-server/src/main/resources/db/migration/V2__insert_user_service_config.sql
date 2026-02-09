@@ -50,6 +50,15 @@ INSERT INTO CONFIG_PROPERTIES (APPLICATION, PROFILE, LABEL, KEY, VALUE) VALUES
 ('user-service', 'default', 'master', 'default-admin.password', '${DEFAULT_ADMIN_PASSWORD}'),
 ('user-service', 'default', 'master', 'default-admin.first-name', '${DEFAULT_ADMIN_FIRSTNAME}'),
 ('user-service', 'default', 'master', 'default-admin.last-name', '${DEFAULT_ADMIN_LASTNAME}'),
-('user-service', 'default', 'master', 'default-admin.phone-number', '${DEFAULT_ADMIN_PHONE}')
+('user-service', 'default', 'master', 'default-admin.phone-number', '${DEFAULT_ADMIN_PHONE}'),
+('user-service', 'default', 'master', 'keycloak.initializer.enabled', '${KEYCLOAK_INITIALIZER_ENABLED}'),
+('user-service', 'default', 'master', 'keycloak.initializer.admin.url', '${KEYCLOAK_SERVER_URL}'),
+('user-service', 'default', 'master', 'keycloak.initializer.admin.username', '${KEYCLOAK_ADMIN}'),
+('user-service', 'default', 'master', 'keycloak.initializer.admin.password', '${KEYCLOAK_ADMIN_PASSWORD}'),
+('user-service', 'default', 'master', 'keycloak.initializer.admin.client-id', '${KEYCLOAK_ADMIN_CLIENT_ID}'),
+('user-service', 'default', 'master', 'keycloak.initializer.retry.max-attempts', '${KEYCLOAK_INITIALIZER_MAX_ATTEMPTS}'),
+('user-service', 'default', 'master', 'keycloak.initializer.retry.initial-backoff-millis', '${KEYCLOAK_INITIALIZER_BACKOFF}'),
+('user-service', 'default', 'master', 'keycloak.initializer.retry.multiplier', '${KEYCLOAK_INITIALIZER_BACKOFF_MULTIPLIER}'),
+('user-service', 'default', 'master', 'keycloak.initializer.retry.fail-on-error', '${KEYCLOAK_INITIALIZER_FAIL_ON_ERROR}')
 ON CONFLICT (APPLICATION, PROFILE, LABEL, KEY) DO NOTHING;
 
