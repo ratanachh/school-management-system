@@ -95,6 +95,14 @@ public class User {
         }
     }
 
+    /**
+     * Convenience constructor for testing with default values
+     * Creates a user with emailVerified=false, accountStatus=ACTIVE, phoneNumber=null
+     */
+    public User(String keycloakId, String email, Set<UserRole> roles, String firstName, String lastName) {
+        this(keycloakId, email, firstName, lastName, roles, null, false, AccountStatus.ACTIVE);
+    }
+
     // Getters and Setters
 
     public UUID getId() {

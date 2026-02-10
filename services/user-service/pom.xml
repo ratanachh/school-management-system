@@ -112,17 +112,7 @@
             <version>2.6.0</version>
         </dependency>
 
-        <!-- Kotlin -->
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>com.visor.school</groupId>
@@ -138,10 +128,12 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test-junit5</artifactId>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+
 
         <dependency>
             <groupId>com.h2database</groupId>
@@ -163,24 +155,10 @@
             <artifactId>rabbitmq</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test</artifactId>
-            <version>${kotlin.version}</version>
-            <scope>test</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>org.mockito.kotlin</groupId>
-            <artifactId>mockito-kotlin</artifactId>
-            <version>5.2.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
+
+
+
     </dependencies>
 
     <build>

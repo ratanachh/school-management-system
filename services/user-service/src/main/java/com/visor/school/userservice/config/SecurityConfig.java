@@ -1,8 +1,8 @@
 package com.visor.school.userservice.config;
 
-// import com.visor.school.keycloak.config.InitializerConfiguration;
 import java.util.List;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -16,6 +16,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.visor.school.keycloak.config.InitializerProperties;
+
 /**
  * Spring Security configuration with Keycloak JWT validation
  * Configures OAuth2 Resource Server to validate JWT tokens from Keycloak
@@ -24,7 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-// @Import(InitializerConfiguration.class) // TODO: Verify InitializerConfiguration location
+@EnableConfigurationProperties(InitializerProperties.class)
 public class SecurityConfig {
 
     private final CustomPermissionEvaluator permissionEvaluator;
