@@ -25,10 +25,18 @@ public class KeycloakInitializerRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        log.info("KeycloakInitializerRunner.run() called");
+        log.info("Keycloak initializer enabled: {}", properties.isEnabled());
+        log.info("Keycloak realm name: {}", properties.getRealm().getName());
+        log.info("Keycloak admin URL: {}", properties.getAdmin().getUrl());
+        log.info("Number of realm roles configured: {}", properties.getRealmRoles().size());
+        
         if (!properties.isEnabled()) {
             log.info("Keycloak initializer disabled via configuration; skipping startup provisioning");
             return;
         }
+        
+        log.info("Starting Keycloak initialization...");
 
         KeycloakBlueprint blueprint = properties.toBlueprint();
         InitializerProperties.Retry retry = properties.getRetry();
