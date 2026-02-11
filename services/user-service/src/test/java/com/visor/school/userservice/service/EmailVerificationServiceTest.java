@@ -11,7 +11,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -39,13 +42,18 @@ class EmailVerificationServiceTest {
 
     private User testUser;
 
+    /** Mutable clock for tests that need to simulate time (e.g. expired token). */
+    private MutableClock clock;
+
     @BeforeEach
     void setup() {
+        clock = new MutableClock(Instant.now());
         emailVerificationService = new EmailVerificationService(
             userRepository,
             emailService,
             keycloakClient,
-            24
+            24,
+            clock
         );
         
         Set<UserRole> roles = new HashSet<>();
@@ -89,12 +97,7 @@ class EmailVerificationServiceTest {
     void shouldVerifyEmailWithValidToken() throws Exception {
         // Given
         emailVerificationService.sendVerificationEmail(testUser);
-        
-        Field tokensField = EmailVerificationService.class.getDeclaredField("verificationTokens");
-        tokensField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        Map<String, ?> tokensMap = (Map<String, ?>) tokensField.get(emailVerificationService);
-        String token = tokensMap.keySet().iterator().next();
+        String token = getVerificationTokens().keySet().iterator().next();
 
         when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
         when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -118,23 +121,16 @@ class EmailVerificationServiceTest {
 
     @Test
     void shouldThrowExceptionForExpiredToken() throws Exception {
-        // Given
+        // Given: send email so token exists with expiry = now + 24h
         emailVerificationService.sendVerificationEmail(testUser);
-        
-        Field tokensField = EmailVerificationService.class.getDeclaredField("verificationTokens");
-        tokensField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        Map<String, ?> tokens = (Map<String, ?>) tokensField.get(emailVerificationService);
+        // Advance clock past token expiry (25 hours)
+        clock.setInstant(clock.instant().plus(25, ChronoUnit.HOURS));
 
-        // Manually expire the token
+        // Get token from internal map (no reflection on final field)
+        Map<String, ?> tokens = getVerificationTokens();
         String token = tokens.keySet().iterator().next();
-        Object tokenData = tokens.get(token);
-        Class<?> tokenClass = tokenData.getClass();
-        Field expiresAtField = tokenClass.getDeclaredField("expiresAt");
-        expiresAtField.setAccessible(true);
-        expiresAtField.set(tokenData, Instant.now().minusSeconds(1));
 
-        // When & Then
+        // When & Then: verifyEmail sees "now" as 25h later, so token is expired
         assertThrows(IllegalArgumentException.class, () -> {
             emailVerificationService.verifyEmail(token);
         });
@@ -142,26 +138,54 @@ class EmailVerificationServiceTest {
 
     @Test
     void shouldCleanupExpiredTokens() throws Exception {
-        // Given
+        // Given: send email so token exists
         emailVerificationService.sendVerificationEmail(testUser);
-        
-        Field tokensField = EmailVerificationService.class.getDeclaredField("verificationTokens");
-        tokensField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        Map<String, ?> tokens = (Map<String, ?>) tokensField.get(emailVerificationService);
+        // Advance clock past token expiry
+        clock.setInstant(clock.instant().plus(25, ChronoUnit.HOURS));
 
-        // Manually expire the token
-        String token = tokens.keySet().iterator().next();
-        Object tokenData = tokens.get(token);
-        Class<?> tokenClass = tokenData.getClass();
-        Field expiresAtField = tokenClass.getDeclaredField("expiresAt");
-        expiresAtField.setAccessible(true);
-        expiresAtField.set(tokenData, Instant.now().minusSeconds(1));
+        Map<String, ?> tokens = getVerificationTokens();
+        assertFalse(tokens.isEmpty());
 
         // When
         emailVerificationService.cleanupExpiredTokens();
 
         // Then
-        assertTrue(tokens.isEmpty());
+        assertTrue(getVerificationTokens().isEmpty());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, ?> getVerificationTokens() throws Exception {
+        Field tokensField = EmailVerificationService.class.getDeclaredField("verificationTokens");
+        tokensField.setAccessible(true);
+        return (Map<String, ?>) tokensField.get(emailVerificationService);
+    }
+
+    /** Clock whose instant can be set for tests. */
+    private static final class MutableClock extends Clock {
+        private Instant instant;
+        private final ZoneId zone = ZoneId.systemDefault();
+
+        MutableClock(Instant initial) {
+            this.instant = initial;
+        }
+
+        void setInstant(Instant instant) {
+            this.instant = instant;
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return zone;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return Clock.fixed(instant, zone);
+        }
     }
 }

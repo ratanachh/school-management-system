@@ -7,16 +7,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
 /**
- * Initializes the default super admin user after application startup
- * This runs after Keycloak initialization is complete
+ * Initializes the default super admin user after application startup.
+ * This runs after Keycloak initialization is complete.
+ * Excluded in "test" profile so tests do not require default-admin.* properties.
  */
 @Component
+@Profile("!test")
 public class DefaultAdminUserInitializer {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

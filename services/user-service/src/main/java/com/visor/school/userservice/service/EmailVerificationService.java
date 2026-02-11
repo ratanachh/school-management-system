@@ -1,6 +1,7 @@
 package com.visor.school.userservice.service;
 
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
@@ -35,17 +36,20 @@ public class EmailVerificationService {
     private final EmailService emailService;
     private final KeycloakClient keycloakClient;
     private final long tokenExpiryHours;
+    private final Clock clock;
 
     public EmailVerificationService(
         UserRepository userRepository,
         EmailService emailService,
         KeycloakClient keycloakClient,
-        @Value("${email.verification.token.expiry.hours:24}") long tokenExpiryHours
+        @Value("${email.verification.token.expiry.hours:24}") long tokenExpiryHours,
+        Clock clock
     ) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.keycloakClient = keycloakClient;
         this.tokenExpiryHours = tokenExpiryHours;
+        this.clock = clock != null ? clock : Clock.systemUTC();
     }
 
     /**
@@ -55,7 +59,7 @@ public class EmailVerificationService {
         logger.info("Generating verification token for user: {}", user.getId());
 
         String token = generateToken();
-        Instant expiresAt = Instant.now().plus(tokenExpiryHours, ChronoUnit.HOURS);
+        Instant expiresAt = Instant.now(clock).plus(tokenExpiryHours, ChronoUnit.HOURS);
 
         verificationTokens.put(token, new VerificationToken(user.getId(), user.getEmail(), expiresAt));
 
@@ -77,7 +81,7 @@ public class EmailVerificationService {
             throw new IllegalArgumentException("Invalid verification token");
         }
 
-        if (verificationToken.expiresAt.isBefore(Instant.now())) {
+        if (verificationToken.expiresAt.isBefore(Instant.now(clock))) {
             verificationTokens.remove(token);
             throw new IllegalArgumentException("Verification token has expired");
         }
@@ -117,7 +121,7 @@ public class EmailVerificationService {
      * Clean up expired tokens (should be called periodically)
      */
     public void cleanupExpiredTokens() {
-        Instant now = Instant.now();
+        Instant now = Instant.now(clock);
         verificationTokens.entrySet().removeIf(entry -> entry.getValue().expiresAt.isBefore(now));
         logger.debug("Cleaned up expired verification tokens");
     }

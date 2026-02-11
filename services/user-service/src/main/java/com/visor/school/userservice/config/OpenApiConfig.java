@@ -1,5 +1,6 @@
 package com.visor.school.userservice.config;
 
+import java.time.Clock;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,11 @@ import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenApiConfig {
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();
+    }
 
     @Bean
     public OpenAPI customOpenAPI() {

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doNothing;
@@ -94,7 +95,7 @@ class PasswordResetServiceTest {
         // Given
         String keycloakId = "keycloak-123";
         String newPassword = "newPassword123";
-        doNothing().when(keycloakClient).resetPassword(any(), any(), any());
+        doNothing().when(keycloakClient).resetPassword(any(), any(), anyBoolean());
 
         // When
         passwordResetService.resetPassword(keycloakId, newPassword, false);

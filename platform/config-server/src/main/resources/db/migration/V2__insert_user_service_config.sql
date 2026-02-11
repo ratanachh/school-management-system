@@ -43,7 +43,7 @@ INSERT INTO CONFIG_PROPERTIES (APPLICATION, PROFILE, LABEL, KEY, VALUE) VALUES
 ('user-service', 'default', 'master', 'logging.pattern.console', '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n'),
 ('user-service', 'default', 'master', 'logging.pattern.file', '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n'),
 ('user-service', 'default', 'master', 'logging.file.name', 'logs/user-service.log'),
-('user-service', 'default', 'master', 'logging.logback.rollingpolicy.file-name-pattern', 'logs/user-service-%d{yyyy-MM-dd}.log'),
+('user-service', 'default', 'master', 'logging.logback.rollingpolicy.file-name-pattern', 'logs/user-service-%d{yyyy-MM-dd}.%i.log'),
 ('user-service', 'default', 'master', 'logging.logback.rollingpolicy.max-history', '30'),
 ('user-service', 'default', 'master', 'logging.logback.rollingpolicy.total-size-cap', '1GB'),
 ('user-service', 'default', 'master', 'default-admin.email', '${DEFAULT_ADMIN_EMAIL}'),

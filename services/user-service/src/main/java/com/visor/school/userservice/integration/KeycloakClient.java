@@ -27,6 +27,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,10 +36,12 @@ import com.visor.school.userservice.dto.LoginResponse;
 import jakarta.ws.rs.core.Response;
 
 /**
- * Keycloak Admin API client for user management
- * Handles user creation, password reset, and user management operations
+ * Keycloak Admin API client for user management.
+ * Handles user creation, password reset, and user management operations.
+ * Excluded in "test" profile; tests use a mock from TestConfig.
  */
 @Component
+@Profile("!test")
 public class KeycloakClient {
 
     private static final int MIN_REFRESH_TOKEN_LENGTH = 10;

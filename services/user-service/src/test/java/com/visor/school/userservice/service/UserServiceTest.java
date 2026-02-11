@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doNothing;
@@ -121,14 +122,14 @@ class UserServiceTest {
             );
         });
 
-        verify(keycloakClient, never()).createUser(any(), any(), any(), any(), any(), any());
+        verify(keycloakClient, never()).createUser(any(), any(), any(), any(), anyBoolean(), any());
     }
 
     @Test
     void shouldThrowExceptionWhenKeycloakUserCreationFails() {
         // Given
         when(userRepository.existsByEmail(testEmail)).thenReturn(false);
-        when(keycloakClient.createUser(any(), any(), any(), any(), any(), any()))
+        when(keycloakClient.createUser(any(), any(), any(), any(), anyBoolean(), any()))
             .thenThrow(new KeycloakException("Failed to create user in Keycloak"));
 
         Set<UserRole> roles = new HashSet<>();
