@@ -29,6 +29,9 @@ public class KeycloakInitializerRunner implements ApplicationRunner {
         log.info("Keycloak initializer enabled: {}", properties.isEnabled());
         log.info("Keycloak realm name: {}", properties.getRealm().getName());
         log.info("Keycloak admin URL: {}", properties.getAdmin().getUrl());
+        log.info("Keycloak admin username: '{}'", properties.getAdmin().getUsername());
+        String password = properties.getAdmin().getPassword();
+        log.info("Keycloak admin password: '{}'", (password != null && !password.isEmpty()) ? "***" + password.substring(Math.max(0, password.length() - 3)) : "null/empty");
         log.info("Number of realm roles configured: {}", properties.getRealmRoles().size());
         
         if (!properties.isEnabled()) {

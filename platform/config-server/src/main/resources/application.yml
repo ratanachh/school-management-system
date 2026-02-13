@@ -7,7 +7,7 @@ spring:
   application:
     name: config-server
   datasource:
-    url: jdbc:postgresql://localhost:6432/config_server
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/config_server
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
