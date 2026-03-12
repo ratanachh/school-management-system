@@ -76,7 +76,7 @@
         <!-- Keycloak Initializer Core -->
         <dependency>
             <groupId>com.visor.school</groupId>
-            <artifactId>keycloak-initializer-core</artifactId>
+            <artifactId>keycloak-initializer</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -12,10 +12,10 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>keycloak-initializer-core</artifactId>
+    <artifactId>keycloak-initializer</artifactId>
     <packaging>jar</packaging>
 
-    <name>Keycloak Initializer Core</name>
+    <name>Keycloak Initializer</name>
     <description>Shared library for idempotent Keycloak realm, client, and role provisioning.</description>
 
     <properties>

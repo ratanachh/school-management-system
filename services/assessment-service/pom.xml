@@ -12,11 +12,11 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>academic-assessment-service</artifactId>
+    <artifactId>assessment-service</artifactId>
     <packaging>jar</packaging>
 
-    <name>Academic Assessment Service</name>
-    <description>Academic assessments and grading service</description>
+    <name>Assessment Service</name>
+    <description>Assessments and grading service</description>
 
     <dependencies>
         <!-- Spring Boot Web -->
