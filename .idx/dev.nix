@@ -25,8 +25,6 @@
       "vscjava.vscode-java-pack"
       "ms-azuretools.vscode-docker"
       "docker.docker"
-      "fwcd.kotlin"
-      "mathiasfrohlich.Kotlin"
       "VMware.vscode-boot-dev-pack"
       "cweijan.vscode-database-client2"
     ];
