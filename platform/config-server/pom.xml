@@ -71,6 +71,12 @@
                     <jvmArguments>
                         -Dspring.config.import=optional:file:./../../.env[.properties]
                     </jvmArguments>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

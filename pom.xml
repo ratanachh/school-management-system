@@ -18,7 +18,7 @@
         <lombok.version>1.18.42</lombok.version>
         <skip.jacoco>false</skip.jacoco>
 
-        <spring-boot.version>3.5.10</spring-boot.version>
+        <spring-boot.version>3.5.11</spring-boot.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <junit.version>5.11.0</junit.version>
         <mockito.version>5.14.0</mockito.version>
