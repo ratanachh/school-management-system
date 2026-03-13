@@ -32,13 +32,14 @@
       onCreate = {
         # install =
         #   "npm ci --prefer-offline --no-audit --no-progress --timing && npm i @expo/ngrok@^4.1.0 react@latest react-dom@latest react-native@latest && npm i -D @types/react@latest";
+        setup-run-m2 = "mkdir -p /run/.m2/repository && chmod -R 777 /run/.m2";
       };
       # Runs when a workspace restarted
       onStart = {
         docker = ''
-          echo '{"data-root": "/run/docker/.idx-docker"}' > /home/user/.config/docker/daemon.json
-          alias mvn="mvn -gs /home/user/school-mgmt/.idx/settings.xml"
+          echo '{"data-root": "/run/docker/.idx-docker"}' > /home/user/.config/docker/daemon.json;
         '';
+        ensure-m2-exists = "mkdir -p /run/.m2/repository &&chmod -R 777 /run/.m2";
         # android = ''
         #   echo -e "\033[1;33mWaiting for Android emulator to be ready...\033[0m"
         #   # Wait for the device connection command to finish
