@@ -2,14 +2,14 @@
 # see: https://developers.google.com/idx/guides/customize-idx-env
 { pkgs, ... }: {
   # Which nixpkgs channel to use.
-  channel = "unstable";
+  channel = "stable-25.05";
   # Use https://search.nixos.org/packages to find packages
   packages = [ 
     pkgs.maven
-    pkgs.jdk25
     pkgs.htop
     pkgs.inetutils
     pkgs.tailscale
+    pkgs.jdk21
   ];
   services.docker.enable = true;
   # to change directory oof docker available storage.
@@ -23,7 +23,6 @@
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
       "vscjava.vscode-java-pack"
-      "ms-azuretools.vscode-docker"
       "docker.docker"
       "VMware.vscode-boot-dev-pack"
       "cweijan.vscode-database-client2"
@@ -37,7 +36,8 @@
       # Runs when a workspace restarted
       onStart = {
         docker = ''
-          echo '{"data-root": "/home/user/school-mgmt/.idx-docker"}' > /home/user/.config/docker/daemon.json
+          echo '{"data-root": "/run/docker/.idx-docker"}' > /home/user/.config/docker/daemon.json
+          alias mvn="mvn -gs /home/user/school-mgmt/.idx/settings.xml"
         '';
         # android = ''
         #   echo -e "\033[1;33mWaiting for Android emulator to be ready...\033[0m"
