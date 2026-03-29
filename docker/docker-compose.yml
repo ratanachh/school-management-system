@@ -4,6 +4,7 @@ services:
     image: postgres:17
     container_name: school-postgres
     environment:
+      TZ: Asia/Phnom_Penh
       POSTGRES_DB: school_management
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -25,6 +26,7 @@ services:
     image: rabbitmq:3-management
     container_name: school-rabbitmq
     environment:
+      TZ: Asia/Phnom_Penh
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
@@ -46,6 +48,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     container_name: school-elasticsearch
     environment:
+      - TZ=Asia/Phnom_Penh
       - discovery.type=single-node
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
@@ -69,6 +72,7 @@ services:
     container_name: school-keycloak
     command: start-dev
     environment:
+      TZ: Asia/Phnom_Penh
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_DB: postgres
@@ -104,6 +108,7 @@ services:
     container_name: school-minio
     command: server /data --console-address ":9001"
     environment:
+      TZ: Asia/Phnom_Penh
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:

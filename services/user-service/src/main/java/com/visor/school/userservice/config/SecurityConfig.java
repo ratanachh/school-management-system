@@ -53,7 +53,6 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/actuator/**",
                     "/health",
-                    "/v1/auth/register",
                     "/v1/auth/verify-email",
                     "/v1/auth/login",
                     "/v1/auth/reset-password",
