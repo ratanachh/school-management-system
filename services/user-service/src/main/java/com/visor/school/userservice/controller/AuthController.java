@@ -5,10 +5,12 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.visor.school.common.api.ApiResponse;
@@ -18,7 +20,6 @@ import com.visor.school.userservice.dto.PasswordResetRequest;
 import com.visor.school.userservice.dto.RefreshTokenRequest;
 import com.visor.school.userservice.dto.RegisterRequest;
 import com.visor.school.userservice.dto.UserResponse;
-import com.visor.school.userservice.dto.VerifyEmailRequest;
 import com.visor.school.userservice.model.AccountStatus;
 import com.visor.school.userservice.model.User;
 import com.visor.school.userservice.service.EmailVerificationService;
@@ -26,6 +27,7 @@ import com.visor.school.userservice.service.PasswordResetService;
 import com.visor.school.userservice.service.UserService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Authentication controller
@@ -33,6 +35,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/v1/auth")
+@Validated
 public class AuthController {
 
     private final UserService userService;
@@ -50,12 +53,11 @@ public class AuthController {
     }
 
     /**
-     * Register a new user
-     * Flow: Creates Keycloak user first -> receives keycloakId -> creates User entity
-     * Authorization: SUPER_ADMIN or MANAGE_ADMINISTRATORS permission required for ADMINISTRATOR role
+     * Register a new user (Keycloak then local DB). Not public: caller must be SUPER_ADMIN or hold
+     * {@code MANAGE_ADMINISTRATORS}. Further role rules apply in {@link UserService#createUser}.
      */
     @PostMapping("/register")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasAuthority('MANAGE_ADMINISTRATORS') or (!#request.roles().contains(T(com.visor.school.userservice.model.UserRole).ADMINISTRATOR) and !#request.roles().contains(T(com.visor.school.userservice.model.UserRole).SUPER_ADMIN))")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasAuthority('MANAGE_ADMINISTRATORS')")
     public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody RegisterRequest request) {
         User user = userService.createUser(
             request.email(),
@@ -77,12 +79,14 @@ public class AuthController {
     }
 
     /**
-     * Verify email with token
-     * When email is verified, account status is automatically changed from PENDING to ACTIVE
+     * Verify email using the token from the registration email ({@code GET /v1/auth/verify-email?token=...}).
+     * When email is verified, account status is automatically changed from PENDING to ACTIVE.
      */
-    @PostMapping("/verify-email")
-    public ResponseEntity<ApiResponse<Map<String, String>>> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
-        emailVerificationService.verifyEmail(request.token());
+    @GetMapping("/verify-email")
+    public ResponseEntity<ApiResponse<Map<String, String>>> verifyEmail(
+        @RequestParam("token") @NotBlank String token
+    ) {
+        emailVerificationService.verifyEmail(token);
 
         return ResponseEntity.ok(
             ApiResponse.success(

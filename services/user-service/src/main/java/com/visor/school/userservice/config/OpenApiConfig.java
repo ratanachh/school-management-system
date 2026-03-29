@@ -3,6 +3,7 @@ package com.visor.school.userservice.config;
 import java.time.Clock;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,7 +22,7 @@ public class OpenApiConfig {
     }
 
     @Bean
-    public OpenAPI customOpenAPI() {
+    public OpenAPI customOpenAPI(@Value("${api.gateway.url}") String apiGatewayUrl) {
         return new OpenAPI()
             .info(
                 new Info()
@@ -41,8 +42,7 @@ public class OpenApiConfig {
             )
             .servers(
                 List.of(
-                    new Server().url("http://localhost:8081").description("Local development server"),
-                    new Server().url("https://api.school-management.example.com").description("Production server")
+                    new Server().url(apiGatewayUrl).description("API gateway URL")
                 )
             );
     }

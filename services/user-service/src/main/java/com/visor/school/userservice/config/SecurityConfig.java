@@ -30,9 +30,14 @@ import com.visor.school.keycloak.config.InitializerProperties;
 public class SecurityConfig {
 
     private final CustomPermissionEvaluator permissionEvaluator;
+    private final KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter;
 
-    public SecurityConfig(CustomPermissionEvaluator permissionEvaluator) {
+    public SecurityConfig(
+        CustomPermissionEvaluator permissionEvaluator,
+        KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter
+    ) {
         this.permissionEvaluator = permissionEvaluator;
+        this.keycloakJwtAuthenticationConverter = keycloakJwtAuthenticationConverter;
     }
 
     @Bean
@@ -62,7 +67,8 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()
             )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(
+                jwt -> jwt.jwtAuthenticationConverter(keycloakJwtAuthenticationConverter)))
             .build();
     }
 

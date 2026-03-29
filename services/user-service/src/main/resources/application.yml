@@ -1,5 +1,9 @@
 # Local/bootstrap configuration only
 # Service-specific configuration is managed by Spring Cloud Config Server
+api:
+  gateway:
+    url: ${API_GATEWAY_URL:http://localhost:8080}
+
 spring:
   application:
     name: user-service

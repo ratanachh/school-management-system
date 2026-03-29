@@ -30,6 +30,8 @@ INSERT INTO CONFIG_PROPERTIES (APPLICATION, PROFILE, LABEL, KEY, VALUE) VALUES
 ('user-service', 'default', 'master', 'keycloak.admin-username', '${KEYCLOAK_ADMIN}'),
 ('user-service', 'default', 'master', 'keycloak.admin-password', '${KEYCLOAK_ADMIN_PASSWORD}'),
 ('user-service', 'default', 'master', 'keycloak.admin-client-id', '${KEYCLOAK_ADMIN_CLIENT_ID}'),
+('user-service', 'default', 'master', 'api.gateway.url', '${API_GATEWAY_URL}'),
+('user-service', 'default', 'master', 'email.verification.verify-path', '/api/v1/auth/verify-email'),
 ('user-service', 'default', 'master', 'management.endpoints.web.exposure.include', 'health,info,prometheus,metrics'),
 ('user-service', 'default', 'master', 'management.endpoint.health.show-details', 'always'),
 ('user-service', 'default', 'master', 'management.metrics.export.prometheus.enabled', 'true'),
