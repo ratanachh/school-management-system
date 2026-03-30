@@ -73,18 +73,11 @@
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
 
-        <!-- Keycloak Initializer Core -->
+        <!-- Keycloak integration and initializer -->
         <dependency>
             <groupId>com.visor.school</groupId>
-            <artifactId>keycloak-initializer</artifactId>
+            <artifactId>keycloak-integration</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <!-- Keycloak Admin Client -->
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-admin-client</artifactId>
-            <version>26.0.7</version>
         </dependency>
 
         <!-- Spring Boot Actuator -->

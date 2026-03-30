@@ -689,6 +689,6 @@ graph TD
 ## References
 
 - [ROLE_DEFINITIONS.md](./ROLE_DEFINITIONS.md) - Detailed role definitions
-- Keycloak Initializer Configuration: `shared/keycloak-initializer/src/main/resources/application.yml`
+- Keycloak Integration Configuration: `shared/keycloak-integration/src/main/resources/application.yml`
 - User Service: `services/user-service/`
 - Common Events: `services/common/src/main/kotlin/com/visor/school/common/events/`

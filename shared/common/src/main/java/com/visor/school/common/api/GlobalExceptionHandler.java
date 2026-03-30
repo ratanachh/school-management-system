@@ -25,20 +25,41 @@ public class GlobalExceptionHandler {
         return description.startsWith("uri=") ? description.substring(4) : description;
     }
 
+    private ResponseEntity<ErrorResponse> buildResponse(
+            ErrorCode errorCode,
+            String message,
+            HttpStatus status,
+            WebRequest request
+    ) {
+        return ResponseEntity.status(status).body(
+            ErrorResponse.of(errorCode, message, status, requestPath(request))
+        );
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponse(
+            ErrorCode errorCode,
+            String message,
+            HttpStatus status,
+            WebRequest request,
+            Map<String, Object> details
+    ) {
+        return ResponseEntity.status(status).body(
+            ErrorResponse.of(errorCode, message, status, requestPath(request), details)
+        );
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex,
             WebRequest request
     ) {
         logger.warn("Illegal argument: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                "BAD_REQUEST",
-                ex.getMessage() != null ? ex.getMessage() : "Invalid request",
-                java.time.Instant.now(),
-                requestPath(request),
-                HttpStatus.BAD_REQUEST.value()
+        return buildResponse(
+            ErrorCode.BAD_REQUEST,
+            ex.getMessage() != null ? ex.getMessage() : "Invalid request",
+            HttpStatus.BAD_REQUEST,
+            request
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -49,15 +70,13 @@ public class GlobalExceptionHandler {
         logger.warn("Constraint violation: {}", ex.getMessage(), ex);
         Map<String, Object> details = ex.getConstraintViolations().stream()
                 .collect(Collectors.toMap(v -> v.getPropertyPath().toString(), v -> (Object) v.getMessage()));
-        ErrorResponse errorResponse = new ErrorResponse(
-                "VALIDATION_ERROR",
-                "Validation failed",
-                java.time.Instant.now(),
-                requestPath(request),
-                HttpStatus.BAD_REQUEST.value(),
-                details
+        return buildResponse(
+            ErrorCode.VALIDATION_ERROR,
+            Constants.ERROR_VALIDATION_FAILED,
+            HttpStatus.BAD_REQUEST,
+            request,
+            details
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(NoSuchElementException.class)
@@ -66,14 +85,12 @@ public class GlobalExceptionHandler {
             WebRequest request
     ) {
         logger.warn("Resource not found: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                "NOT_FOUND",
-                ex.getMessage() != null ? ex.getMessage() : Constants.ERROR_RESOURCE_NOT_FOUND,
-                java.time.Instant.now(),
-                requestPath(request),
-                HttpStatus.NOT_FOUND.value()
+        return buildResponse(
+            ErrorCode.NOT_FOUND,
+            ex.getMessage() != null ? ex.getMessage() : Constants.ERROR_RESOURCE_NOT_FOUND,
+            HttpStatus.NOT_FOUND,
+            request
         );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(IllegalStateException.class)
@@ -82,14 +99,12 @@ public class GlobalExceptionHandler {
             WebRequest request
     ) {
         logger.warn("Illegal state: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                "INVALID_STATE",
-                ex.getMessage() != null ? ex.getMessage() : Constants.ERROR_INVALID_STATE,
-                java.time.Instant.now(),
-                requestPath(request),
-                HttpStatus.BAD_REQUEST.value()
+        return buildResponse(
+            ErrorCode.INVALID_STATE,
+            ex.getMessage() != null ? ex.getMessage() : Constants.ERROR_INVALID_STATE,
+            HttpStatus.BAD_REQUEST,
+            request
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
@@ -98,14 +113,12 @@ public class GlobalExceptionHandler {
             WebRequest request
     ) {
         logger.warn("Optimistic locking failure: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                "CONCURRENT_MODIFICATION",
-                Constants.ERROR_CONCURRENT_MODIFICATION,
-                java.time.Instant.now(),
-                requestPath(request),
-                HttpStatus.CONFLICT.value()
+        return buildResponse(
+            ErrorCode.CONCURRENT_MODIFICATION,
+            Constants.ERROR_CONCURRENT_MODIFICATION,
+            HttpStatus.CONFLICT,
+            request
         );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -114,14 +127,12 @@ public class GlobalExceptionHandler {
             WebRequest request
     ) {
         logger.warn("Access denied: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                "ACCESS_DENIED",
-                Constants.ERROR_ACCESS_DENIED,
-                java.time.Instant.now(),
-                requestPath(request),
-                HttpStatus.FORBIDDEN.value()
+        return buildResponse(
+            ErrorCode.ACCESS_DENIED,
+            Constants.ERROR_ACCESS_DENIED,
+            HttpStatus.FORBIDDEN,
+            request
         );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
@@ -130,13 +141,11 @@ public class GlobalExceptionHandler {
             WebRequest request
     ) {
         logger.error("Unexpected error: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                "INTERNAL_ERROR",
-                "An unexpected error occurred",
-                java.time.Instant.now(),
-                requestPath(request),
-                HttpStatus.INTERNAL_SERVER_ERROR.value()
+        return buildResponse(
+            ErrorCode.INTERNAL_ERROR,
+            "An unexpected error occurred",
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            request
         );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }

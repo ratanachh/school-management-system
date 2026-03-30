@@ -16,13 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.visor.school.common.api.ApiResponse;
 import com.visor.school.userservice.dto.LoginRequest;
 import com.visor.school.userservice.dto.LoginResponse;
+import com.visor.school.userservice.dto.PasswordResetConfirmRequest;
 import com.visor.school.userservice.dto.PasswordResetRequest;
 import com.visor.school.userservice.dto.RefreshTokenRequest;
 import com.visor.school.userservice.dto.RegisterRequest;
 import com.visor.school.userservice.dto.UserResponse;
 import com.visor.school.userservice.model.AccountStatus;
 import com.visor.school.userservice.model.User;
-import com.visor.school.userservice.service.EmailVerificationService;
+import com.visor.school.userservice.service.EmailService;
 import com.visor.school.userservice.service.PasswordResetService;
 import com.visor.school.userservice.service.UserService;
 
@@ -39,16 +40,16 @@ import jakarta.validation.constraints.NotBlank;
 public class AuthController {
 
     private final UserService userService;
-    private final EmailVerificationService emailVerificationService;
+    private final EmailService emailService;
     private final PasswordResetService passwordResetService;
 
     public AuthController(
         UserService userService,
-        EmailVerificationService emailVerificationService,
+        EmailService emailService,
         PasswordResetService passwordResetService
     ) {
         this.userService = userService;
-        this.emailVerificationService = emailVerificationService;
+        this.emailService = emailService;
         this.passwordResetService = passwordResetService;
     }
 
@@ -69,7 +70,7 @@ public class AuthController {
         );
 
         // Send verification email
-        emailVerificationService.sendVerificationEmail(user);
+        emailService.sendVerificationEmail(user);
 
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(
@@ -86,7 +87,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Map<String, String>>> verifyEmail(
         @RequestParam("token") @NotBlank String token
     ) {
-        emailVerificationService.verifyEmail(token);
+        emailService.verifyEmail(token);
 
         return ResponseEntity.ok(
             ApiResponse.success(
@@ -143,6 +144,27 @@ public class AuthController {
             ApiResponse.success(
                 Map.of("message", "Password reset email sent"),
                 "Password reset email sent successfully"
+            )
+        );
+    }
+
+    /**
+     * Confirm password reset using one-time token.
+     */
+    @PostMapping("/reset-password/confirm")
+    public ResponseEntity<ApiResponse<Map<String, String>>> confirmPasswordReset(
+        @Valid @RequestBody PasswordResetConfirmRequest request
+    ) {
+        passwordResetService.completePasswordReset(
+            request.token(),
+            request.newPassword(),
+            request.temporary()
+        );
+
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                Map.of("message", "Password reset completed"),
+                "Password reset completed successfully"
             )
         );
     }

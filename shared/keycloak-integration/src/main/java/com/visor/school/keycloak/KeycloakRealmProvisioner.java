@@ -39,6 +39,10 @@ import jakarta.ws.rs.NotFoundException;
 public class KeycloakRealmProvisioner implements RealmProvisioner {
 
     private static final String INITIALIZED_FLAG_KEY = "sso.system.initialized";
+    private static final String INITIALIZED_FLAG_VALUE = "true";
+    private static final String REALM_MANAGEMENT_CLIENT_ID = "realm-management";
+    private static final String MANAGE_USERS_ROLE = "manage-users";
+    private static final String VIEW_USERS_ROLE = "view-users";
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final KeycloakAdminClientFactory clientFactory;
 
@@ -337,11 +341,11 @@ public class KeycloakRealmProvisioner implements RealmProvisioner {
         }
         
         String currentValue = attributes.get(INITIALIZED_FLAG_KEY);
-        if ("true".equalsIgnoreCase(currentValue)) {
+        if (INITIALIZED_FLAG_VALUE.equalsIgnoreCase(currentValue)) {
             return;
         }
         
-        attributes.put(INITIALIZED_FLAG_KEY, "true");
+        attributes.put(INITIALIZED_FLAG_KEY, INITIALIZED_FLAG_VALUE);
         representation.setAttributes(attributes);
         realmResource.update(representation);
         log.info("Marked realm '{}' as initialized", representation.getRealm());
@@ -365,9 +369,9 @@ public class KeycloakRealmProvisioner implements RealmProvisioner {
             }
 
             // Get the realm-management client
-            List<ClientRepresentation> realmManagementList = clientsResource.findByClientId("realm-management");
+            List<ClientRepresentation> realmManagementList = clientsResource.findByClientId(REALM_MANAGEMENT_CLIENT_ID);
             if (realmManagementList.isEmpty()) {
-                log.warn("realm-management client not found");
+                log.warn("{} client not found", REALM_MANAGEMENT_CLIENT_ID);
                 return;
             }
             ClientRepresentation realmManagementClient = realmManagementList.get(0);
@@ -377,22 +381,35 @@ public class KeycloakRealmProvisioner implements RealmProvisioner {
             List<RoleRepresentation> rolesToAssign = new ArrayList<>();
             
             try {
-                rolesToAssign.add(realmManagementRoles.get("manage-users").toRepresentation());
+                rolesToAssign.add(realmManagementRoles.get(MANAGE_USERS_ROLE).toRepresentation());
             } catch (Exception e) {
-                log.warn("manage-users role not found in realm-management");
+                log.warn("{} role not found in {}", MANAGE_USERS_ROLE, REALM_MANAGEMENT_CLIENT_ID);
             }
             
             try {
-                rolesToAssign.add(realmManagementRoles.get("view-users").toRepresentation());
+                rolesToAssign.add(realmManagementRoles.get(VIEW_USERS_ROLE).toRepresentation());
             } catch (Exception e) {
-                log.warn("view-users role not found in realm-management");
+                log.warn("{} role not found in {}", VIEW_USERS_ROLE, REALM_MANAGEMENT_CLIENT_ID);
             }
 
             if (!rolesToAssign.isEmpty()) {
-                // Assign the roles to the service account user
                 UserResource userResource = realmResource.users().get(serviceAccountUser.getId());
-                userResource.roles().clientLevel(realmManagementClient.getId()).add(rolesToAssign);
-                log.info("Assigned {} realm-management roles to service account for client '{}'", rolesToAssign.size(), clientId);
+                List<RoleRepresentation> currentlyAssigned =
+                    userResource.roles().clientLevel(realmManagementClient.getId()).listAll();
+                Set<String> assignedRoleNames = currentlyAssigned.stream()
+                    .map(RoleRepresentation::getName)
+                    .collect(Collectors.toSet());
+                List<RoleRepresentation> missingRoles = rolesToAssign.stream()
+                    .filter(role -> !assignedRoleNames.contains(role.getName()))
+                    .collect(Collectors.toList());
+
+                if (missingRoles.isEmpty()) {
+                    log.debug("Service account for client '{}' already has required {} roles", clientId, REALM_MANAGEMENT_CLIENT_ID);
+                    return;
+                }
+
+                userResource.roles().clientLevel(realmManagementClient.getId()).add(missingRoles);
+                log.info("Assigned {} {} role(s) to service account for client '{}'", missingRoles.size(), REALM_MANAGEMENT_CLIENT_ID, clientId);
             }
         } catch (Exception e) {
             log.error("Failed to assign service account roles for client '{}'", clientId, e);

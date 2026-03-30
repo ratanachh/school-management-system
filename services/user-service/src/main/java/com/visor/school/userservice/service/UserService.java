@@ -18,9 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.visor.school.userservice.dto.LoginResponse;
 import com.visor.school.userservice.event.UserEventPublisher;
-import com.visor.school.userservice.integration.KeycloakClient;
-import com.visor.school.userservice.integration.KeycloakException;
-import com.visor.school.userservice.integration.UserAlreadyExistsException;
+import com.visor.school.keycloak.integration.KeycloakClient;
+import com.visor.school.keycloak.integration.KeycloakException;
+import com.visor.school.keycloak.integration.KeycloakLoginResponse;
+import com.visor.school.keycloak.integration.UserAlreadyExistsException;
 import com.visor.school.userservice.model.AccountStatus;
 import com.visor.school.userservice.model.User;
 import com.visor.school.userservice.model.UserRole;
@@ -39,17 +40,20 @@ public class UserService {
     private final KeycloakClient keycloakClient;
     private final UserEventPublisher eventPublisher;
     private final SecurityContextService securityContextService;
+    private final PostCommitExecutor postCommitExecutor;
 
     public UserService(
         UserRepository userRepository,
         KeycloakClient keycloakClient,
         UserEventPublisher eventPublisher,
-        SecurityContextService securityContextService
+        SecurityContextService securityContextService,
+        PostCommitExecutor postCommitExecutor
     ) {
         this.userRepository = userRepository;
         this.keycloakClient = keycloakClient;
         this.eventPublisher = eventPublisher;
         this.securityContextService = securityContextService;
+        this.postCommitExecutor = postCommitExecutor;
     }
 
     /**
@@ -86,7 +90,7 @@ public class UserService {
         try {
             // Step 1: Create user in Keycloak first with attributes
             Map<String, String> attributes = new HashMap<>();
-            attributes.put("firstLogin", "true");
+            attributes.put(UserAttributeKeys.FIRST_LOGIN, UserAttributeKeys.TRUE_VALUE);
 
             String keycloakId = keycloakClient.createUser(
                 email,
@@ -117,7 +121,6 @@ public class UserService {
             User saved = userRepository.save(user);
             logger.info("User created successfully: {} (Keycloak ID: {})", saved.getId(), keycloakId);
 
-            // Publish user created event
             eventPublisher.publishUserCreated(saved);
 
             return saved;
@@ -159,7 +162,7 @@ public class UserService {
         try {
             // Step 1: Create user in Keycloak first (using admin credentials)
             Map<String, String> attributes = new HashMap<>();
-            attributes.put("firstLogin", "true");
+            attributes.put(UserAttributeKeys.FIRST_LOGIN, UserAttributeKeys.TRUE_VALUE);
 
             String keycloakId = keycloakClient.createUserAsAdmin(
                 email,
@@ -189,7 +192,6 @@ public class UserService {
             User saved = userRepository.save(user);
             logger.info("System user created successfully: {} (Keycloak ID: {})", saved.getId(), keycloakId);
 
-            // Publish user created event
             eventPublisher.publishUserCreated(saved);
 
             return saved;
@@ -229,7 +231,6 @@ public class UserService {
                 User saved = userRepository.save(user);
                 logger.info("System user synced from Keycloak: {} (Keycloak ID: {})", saved.getId(), keycloakUser.getId());
 
-                // Publish user created event
                 eventPublisher.publishUserCreated(saved);
 
                 return saved;
@@ -369,14 +370,11 @@ public class UserService {
             .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
 
         user.verifyEmail();
-        
-        // Update Keycloak email verification status
-        keycloakClient.updateEmailVerification(user.getKeycloakId(), true);
 
         logger.info("Email verified for user: {}", id);
         User saved = userRepository.save(user);
-        
-        // Publish email verified event
+
+        keycloakClient.updateEmailVerification(saved.getKeycloakId(), true);
         eventPublisher.publishEmailVerified(saved);
         
         return saved;
@@ -392,8 +390,10 @@ public class UserService {
                 UserRepresentation keycloakUser = keycloakClient.getUser(keycloakId);
                 // Check attribute firstLogin == "true"
                 if (keycloakUser != null && keycloakUser.getAttributes() != null) {
-                    List<String> firstLoginAttr = keycloakUser.getAttributes().get("firstLogin");
-                    if (firstLoginAttr != null && !firstLoginAttr.isEmpty() && "true".equals(firstLoginAttr.get(0))) {
+                    List<String> firstLoginAttr = keycloakUser.getAttributes().get(UserAttributeKeys.FIRST_LOGIN);
+                    if (firstLoginAttr != null &&
+                        !firstLoginAttr.isEmpty() &&
+                        UserAttributeKeys.TRUE_VALUE.equals(firstLoginAttr.get(0))) {
                         wasFirstLogin = true;
                     }
                 }
@@ -412,21 +412,38 @@ public class UserService {
                     } else {
                         attributes = new HashMap<>(attributes); // ensure mutable
                     }
-                    attributes.put("firstLogin", Collections.singletonList("false"));
+                    attributes.put(UserAttributeKeys.FIRST_LOGIN, Collections.singletonList(UserAttributeKeys.FALSE_VALUE));
                     keycloakUser.setAttributes(attributes);
-                    keycloakClient.updateUser(keycloakId, keycloakUser);
-                    logger.info("Updated firstLogin attribute to false for user: {}", id);
+                    postCommitExecutor.runAfterCommit(
+                        "update-first-login-keycloak",
+                        () -> keycloakClient.updateUser(keycloakId, keycloakUser)
+                    );
+                    logger.info("Queued firstLogin attribute update for user: {}", id);
                 }
             }
         }
     }
 
     public LoginResponse authenticateUser(String email, String password) {
-        return keycloakClient.authenticateUser(email, password);
+        KeycloakLoginResponse response = keycloakClient.authenticateUser(email, password);
+        return new LoginResponse(
+            response.accessToken(),
+            response.refreshToken(),
+            response.expiresIn(),
+            response.refreshExpiresIn(),
+            response.tokenType()
+        );
     }
 
     public LoginResponse refreshToken(String refreshToken) {
-        return keycloakClient.refreshToken(refreshToken);
+        KeycloakLoginResponse response = keycloakClient.refreshToken(refreshToken);
+        return new LoginResponse(
+            response.accessToken(),
+            response.refreshToken(),
+            response.expiresIn(),
+            response.refreshExpiresIn(),
+            response.tokenType()
+        );
     }
 
     public User getMe() {

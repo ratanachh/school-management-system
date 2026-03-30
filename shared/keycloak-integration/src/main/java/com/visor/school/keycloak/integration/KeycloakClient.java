@@ -1,4 +1,4 @@
-package com.visor.school.userservice.integration;
+package com.visor.school.keycloak.integration;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +17,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,19 +28,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.visor.school.userservice.dto.LoginResponse;
 
 import jakarta.ws.rs.core.Response;
 
-/**
- * Keycloak Admin API client for user management.
- * Handles user creation, password reset, and user management operations.
- * Excluded in "test" profile; tests use a mock from TestConfig.
- */
 @Component
 @Profile("!test")
 public class KeycloakClient {
@@ -136,7 +130,6 @@ public class KeycloakClient {
             if (response.getStatus() == 201) {
                 String userId = extractUserIdFromLocation(response.getLocation().toString());
                 logger.info("User created in Keycloak with ID: {}", userId);
-
                 setPasswordInternal(keycloakClient, userId, password, false);
                 return userId;
             } else if (response.getStatus() == 409) {
@@ -157,7 +150,6 @@ public class KeycloakClient {
         credential.setType(CredentialRepresentation.PASSWORD);
         credential.setValue(password);
         credential.setTemporary(temporary);
-
         keycloakClient.realm(realm).users().get(keycloakId).resetPassword(credential);
         logger.info("Password set for Keycloak user: {} (temporary: {})", keycloakId, temporary);
     }
@@ -174,10 +166,7 @@ public class KeycloakClient {
     public UserRepresentation getUserByEmail(String email) {
         try {
             List<UserRepresentation> users = getAdminKeycloak().realm(realm).users().search(email, true);
-            return users.stream()
-                .filter(u -> u.getEmail().equalsIgnoreCase(email))
-                .findFirst()
-                .orElse(null);
+            return users.stream().filter(u -> u.getEmail().equalsIgnoreCase(email)).findFirst().orElse(null);
         } catch (Exception e) {
             logger.warn("Failed to search for user by email: {}", email, e);
             return null;
@@ -217,8 +206,7 @@ public class KeycloakClient {
     public void assignRealmRolesAsAdmin(String keycloakId, Set<String> roleNames) {
         assignRealmRolesInternal(getAdminKeycloak(), keycloakId, roleNames);
     }
-    
-    // Helper simple method for single role
+
     public void assignRealmRoleAsAdmin(String keycloakId, String roleName) {
         assignRealmRolesInternal(getAdminKeycloak(), keycloakId, Collections.singleton(roleName));
     }
@@ -233,13 +221,10 @@ public class KeycloakClient {
 
     public void syncRealmRoles(String keycloakId, Set<String> targetRoles) {
         Set<String> currentRoles = getUserRealmRoles(keycloakId);
-        
         Set<String> rolesToAdd = new HashSet<>(targetRoles);
         rolesToAdd.removeAll(currentRoles);
-        
         Set<String> rolesToRemove = new HashSet<>(currentRoles);
         rolesToRemove.removeAll(targetRoles);
-
         if (!rolesToAdd.isEmpty()) {
             assignRealmRoles(keycloakId, rolesToAdd);
             logger.info("Added roles to Keycloak user {}: {}", keycloakId, rolesToAdd);
@@ -252,14 +237,12 @@ public class KeycloakClient {
 
     private void assignRealmRolesInternal(Keycloak keycloakClient, String keycloakId, Set<String> roleNames) {
         if (roleNames == null || roleNames.isEmpty()) return;
-
         logger.info("Assigning realm roles '{}' to Keycloak user: {}", roleNames, keycloakId);
         try {
             UserResource userResource = keycloakClient.realm(realm).users().get(keycloakId);
             List<RoleRepresentation> roles = roleNames.stream()
                 .map(roleName -> keycloakClient.realm(realm).roles().get(roleName).toRepresentation())
                 .collect(Collectors.toList());
-            
             userResource.roles().realmLevel().add(roles);
             logger.info("Realm roles '{}' assigned to user: {}", roleNames, keycloakId);
         } catch (Exception e) {
@@ -270,14 +253,12 @@ public class KeycloakClient {
 
     private void removeRealmRolesInternal(Keycloak keycloakClient, String keycloakId, Set<String> roleNames) {
         if (roleNames == null || roleNames.isEmpty()) return;
-
         logger.info("Removing realm roles '{}' from Keycloak user: {}", roleNames, keycloakId);
         try {
             UserResource userResource = keycloakClient.realm(realm).users().get(keycloakId);
             List<RoleRepresentation> roles = roleNames.stream()
                 .map(roleName -> keycloakClient.realm(realm).roles().get(roleName).toRepresentation())
                 .collect(Collectors.toList());
-            
             userResource.roles().realmLevel().remove(roles);
             logger.info("Realm roles '{}' removed from user: {}", roleNames, keycloakId);
         } catch (Exception e) {
@@ -293,29 +274,23 @@ public class KeycloakClient {
         return location.substring(location.lastIndexOf("/") + 1);
     }
 
-    public LoginResponse authenticateUser(String email, String password) {
+    public KeycloakLoginResponse authenticateUser(String email, String password) {
         String tokenUrl = String.format("%s/realms/%s/protocol/openid-connect/token", serverUrl, realm);
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "password");
         body.add("client_id", serviceClientId);
         body.add("client_secret", serviceClientSecret);
         body.add("username", email);
         body.add("password", password);
-
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-
         try {
             Map<?, ?> responseBody = restTemplate.postForObject(tokenUrl, request, Map.class);
             if (responseBody == null) {
                 throw new KeycloakException("Failed to authenticate: empty response");
             }
-
             return mapToLoginResponse(responseBody);
-
         } catch (HttpServerErrorException e) {
             String errorMessage = extractErrorMessageFromResponse(e);
             if (errorMessage == null) errorMessage = "Authentication server error";
@@ -335,35 +310,28 @@ public class KeycloakClient {
         }
     }
 
-    public LoginResponse refreshToken(String refreshToken) {
+    public KeycloakLoginResponse refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new IllegalArgumentException("Refresh token cannot be blank");
         }
         if (refreshToken.length() < MIN_REFRESH_TOKEN_LENGTH) {
             throw new IllegalArgumentException("Invalid refresh token format");
         }
-
         String tokenUrl = String.format("%s/realms/%s/protocol/openid-connect/token", serverUrl, realm);
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "refresh_token");
         body.add("client_id", serviceClientId);
         body.add("client_secret", serviceClientSecret);
         body.add("refresh_token", refreshToken);
-
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-
         try {
             Map<?, ?> responseBody = restTemplate.postForObject(tokenUrl, request, Map.class);
             if (responseBody == null) {
                 throw new KeycloakException("Failed to refresh token: empty response");
             }
-
-            return mapToLoginResponse(responseBody, refreshToken); // Reuse refreshToken if not returned
-
+            return mapToLoginResponse(responseBody, refreshToken);
         } catch (HttpServerErrorException e) {
             String errorMessage = extractErrorMessageFromResponse(e);
             if (errorMessage == null) errorMessage = "Authentication server error";
@@ -373,11 +341,9 @@ public class KeycloakClient {
             String errorMessage = extractErrorMessageFromResponse(e);
             if (errorMessage == null) errorMessage = "Token refresh failed";
             logger.error("Failed to refresh token: {} (HTTP {})", errorMessage, e.getStatusCode());
-            
             if (e.getStatusCode().value() == 400) throw new KeycloakException("Invalid refresh token", e);
             if (e.getStatusCode().value() == 401) throw new KeycloakException("Authentication failed", e);
             if (e.getStatusCode().value() == 403) throw new KeycloakException("Access denied", e);
-            
             throw new KeycloakException(errorMessage, e);
         } catch (Exception e) {
             logger.error("Unexpected error while refreshing token: {}", e.getClass().getSimpleName(), e);
@@ -385,21 +351,19 @@ public class KeycloakClient {
         }
     }
 
-    private LoginResponse mapToLoginResponse(Map<?, ?> responseBody) {
+    private KeycloakLoginResponse mapToLoginResponse(Map<?, ?> responseBody) {
         return mapToLoginResponse(responseBody, null);
     }
 
-    private LoginResponse mapToLoginResponse(Map<?, ?> responseBody, String originalRefreshToken) {
+    private KeycloakLoginResponse mapToLoginResponse(Map<?, ?> responseBody, String originalRefreshToken) {
         String accessToken = (String) responseBody.get("access_token");
         if (accessToken == null) throw new KeycloakException("Failed to authenticate: access_token not found in response");
-
         String refreshToken = (String) responseBody.get("refresh_token");
         if (refreshToken == null && originalRefreshToken != null) {
             refreshToken = originalRefreshToken;
         } else if (refreshToken == null) {
-             throw new KeycloakException("Failed to authenticate: refresh_token not found in response");
+            throw new KeycloakException("Failed to authenticate: refresh_token not found in response");
         }
-
         int expiresIn;
         Object expiresInObj = responseBody.get("expires_in");
         if (expiresInObj instanceof Number) {
@@ -409,7 +373,6 @@ public class KeycloakClient {
         } else {
             throw new KeycloakException("Failed to authenticate: expires_in not found or invalid");
         }
-
         int refreshExpiresIn;
         Object refreshExpiresInObj = responseBody.get("refresh_expires_in");
         if (refreshExpiresInObj instanceof Number) {
@@ -419,11 +382,9 @@ public class KeycloakClient {
         } else {
             refreshExpiresIn = expiresIn;
         }
-        
         String tokenType = (String) responseBody.get("token_type");
         if (tokenType == null) tokenType = "Bearer";
-
-        return new LoginResponse(accessToken, refreshToken, expiresIn, refreshExpiresIn, tokenType);
+        return new KeycloakLoginResponse(accessToken, refreshToken, expiresIn, refreshExpiresIn, tokenType);
     }
 
     private String extractErrorMessageFromResponse(HttpStatusCodeException exception) {
@@ -433,8 +394,7 @@ public class KeycloakClient {
                 Map<?, ?> errorMap = objectMapper.readValue(responseBody, Map.class);
                 String errorDescription = (String) errorMap.get("error_description");
                 if (errorDescription != null) return errorDescription;
-                String error = (String) errorMap.get("error");
-                return error;
+                return (String) errorMap.get("error");
             }
         } catch (Exception e) {
             logger.debug("Could not parse error response body: {}", e.getMessage());

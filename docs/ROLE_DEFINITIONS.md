@@ -447,4 +447,4 @@ SELECT * FROM attendance WHERE student_id = :studentId;
 - Roles are implemented as Keycloak realm roles
 - Permissions are implemented as Keycloak client roles
 - Composite roles map realm roles to client role permissions
-- Director role is a new addition to the system (not yet in Keycloak initializer)
+- Director role is a new addition to the system (not yet in Keycloak integration bootstrap config)

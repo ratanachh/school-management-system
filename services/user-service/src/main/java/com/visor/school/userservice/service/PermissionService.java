@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.visor.school.keycloak.integration.KeycloakPermissionSyncService;
 import com.visor.school.userservice.model.Permission;
 import com.visor.school.userservice.model.User;
 import com.visor.school.userservice.model.UserPermission;
@@ -65,8 +66,7 @@ public class PermissionService {
 
         Permission saved = permissionRepository.save(permission);
 
-        // Sync with Keycloak
-        keycloakPermissionSyncService.syncPermissionToKeycloak(saved);
+        keycloakPermissionSyncService.syncPermissionToKeycloak(saved.getPermissionKey());
 
         logger.info("Permission created: {}", saved.getId());
         return saved;
@@ -96,8 +96,7 @@ public class PermissionService {
 
         UserPermission saved = userPermissionRepository.save(userPermission);
 
-        // Sync with Keycloak
-        keycloakPermissionSyncService.syncUserPermissionToKeycloak(user, permission);
+        keycloakPermissionSyncService.syncUserPermissionToKeycloak(user.getKeycloakId(), permission.getPermissionKey());
 
         logger.info("Permission assigned to user: {}", saved.getId());
         return saved;
@@ -152,8 +151,7 @@ public class PermissionService {
 
         userPermissionRepository.deleteByUserIdAndPermissionId(userId, permissionId);
 
-        // Sync removal with Keycloak
-        keycloakPermissionSyncService.removeUserPermissionFromKeycloak(user, permission);
+        keycloakPermissionSyncService.removeUserPermissionFromKeycloak(user.getKeycloakId(), permission.getPermissionKey());
 
         logger.info("Permission removed from user");
     }

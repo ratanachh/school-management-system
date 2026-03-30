@@ -17,8 +17,8 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.visor.school.common.api.ErrorResponse;
 import com.visor.school.common.api.GlobalExceptionHandler;
-import com.visor.school.userservice.integration.KeycloakException;
-import com.visor.school.userservice.integration.UserAlreadyExistsException;
+import com.visor.school.keycloak.integration.KeycloakException;
+import com.visor.school.keycloak.integration.UserAlreadyExistsException;
 
 /**
  * Validation advice for user service

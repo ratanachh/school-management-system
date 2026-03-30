@@ -1,4 +1,4 @@
-package com.visor.school.userservice.integration;
+package com.visor.school.keycloak.integration;
 
 public class KeycloakException extends RuntimeException {
     public KeycloakException(String message) {

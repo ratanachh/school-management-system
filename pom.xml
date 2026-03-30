@@ -34,7 +34,7 @@
         <module>platform/config-server</module>
         <module>platform/discovery-server</module>
         <module>platform/api-gateway</module>
-        <module>shared/keycloak-initializer</module>
+        <module>shared/keycloak-integration</module>
         <module>shared/common</module>
         <module>services/user-service</module>
         <module>services/academic-service</module>
