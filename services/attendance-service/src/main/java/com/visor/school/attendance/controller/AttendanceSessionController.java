@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Requires COLLECT_ATTENDANCE permission for class leader collection
  */
 @RestController
-@RequestMapping("/api/v1/attendance/sessions")
+@RequestMapping("/v1/attendance/sessions")
 public class AttendanceSessionController {
 
     private final AttendanceService attendanceService;

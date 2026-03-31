@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Accessible by all authenticated users for their own notifications
  */
 @RestController
-@RequestMapping("/api/v1/notifications")
+@RequestMapping("/v1/notifications")
 public class NotificationController {
 
     private final NotificationService notificationService;

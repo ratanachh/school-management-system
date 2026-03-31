@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * Requires TEACHER role with MANAGE_ATTENDANCE permission
  */
 @RestController
-@RequestMapping("/api/v1/attendance")
+@RequestMapping("/v1/attendance")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;

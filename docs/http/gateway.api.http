@@ -1,0 +1,44 @@
+### School Management — API Gateway smoke requests
+### Requires: stack up (gateway :8080), Keycloak, valid JWT for protected routes.
+### Do not commit real tokens; set @token locally only.
+
+@gatewayUrl = http://localhost:8080
+@token = REPLACE_WITH_JWT
+
+### Gateway health (no JWT)
+GET {{gatewayUrl}}/actuator/health
+Accept: application/json
+
+### Auth — login (no JWT; adjust body to your deployment)
+# POST {{gatewayUrl}}/api/v1/auth/login
+# Content-Type: application/json
+#
+# {
+#   "email": "admin@example.com",
+#   "password": "your-password"
+# }
+
+### Users — list (JWT required)
+GET {{gatewayUrl}}/api/v1/users?page=0&size=5
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Academic — students sample (JWT required)
+GET {{gatewayUrl}}/api/v1/students?page=0&size=5
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Academic — class homeroom path (JWT required; note /api/v1/academic/classes prefix)
+GET {{gatewayUrl}}/api/v1/academic/classes/grade/1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Assessment — class report collection path (JWT required; routed to assessment-service)
+# GET {{gatewayUrl}}/api/v1/classes/00000000-0000-0000-0000-000000000000/exam-results?academicYear=2025&term=1
+# Authorization: Bearer {{token}}
+# X-User-Id: 00000000-0000-0000-0000-000000000000
+
+### Search (JWT required)
+GET {{gatewayUrl}}/api/v1/search?q=test
+Authorization: Bearer {{token}}
+Accept: application/json

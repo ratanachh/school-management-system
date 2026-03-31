@@ -121,7 +121,7 @@ public class AttendanceService {
         }
 
         // Validate class leader assignment via Academic Service API
-        // In production, this would call: GET /api/v1/classes/{classId}/leaders/{classLeaderId}
+        // In production, this would call: GET /api/v1/academic/classes/{classId}/leaders/{classLeaderId}
         // For now, we'll validate that the session is in correct state
         if (session.getStatus() != AttendanceSessionStatus.PENDING) {
             throw new IllegalArgumentException("Session must be in PENDING status to be delegated");
@@ -161,7 +161,7 @@ public class AttendanceService {
         }
 
         // Validate class leader assignment via Academic Service API
-        // In production, this would call: GET /api/v1/classes/{classId}/leaders/{classLeaderId}
+        // In production, this would call: GET /api/v1/academic/classes/{classId}/leaders/{classLeaderId}
 
         // Create attendance records for each entry
         for (AttendanceEntry entry : attendanceEntries) {

@@ -1,0 +1,19 @@
+### user-service direct (Swagger / service port)
+### Swagger UI: http://localhost:8081/swagger-ui/index.html
+### OpenAPI: http://localhost:8081/v3/api-docs
+
+@userServiceUrl = http://localhost:8081
+@token = REPLACE_WITH_JWT
+
+### OpenAPI document (anonymous allowed on user-service)
+GET {{userServiceUrl}}/v3/api-docs
+Accept: application/json
+
+### Protected example — list users (JWT)
+GET {{userServiceUrl}}/v1/users?page=0&size=5
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Parents API — requires gateway route /api/v1/parents or direct call here (JWT)
+# GET {{userServiceUrl}}/v1/parents
+# Authorization: Bearer {{token}}

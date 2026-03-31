@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * Requires TEACHER role with MANAGE_GRADES permission or ADMINISTRATOR role
  */
 @RestController
-@RequestMapping("/api/v1/grades")
+@RequestMapping("/v1/grades")
 public class GradeController {
     
     private final GradeService gradeService;

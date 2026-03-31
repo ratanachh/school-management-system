@@ -18,7 +18,7 @@ import java.util.UUID;
  * Requires COLLECT_EXAM_RESULTS and SUBMIT_REPORTS permissions
  */
 @RestController
-@RequestMapping("/api/v1/classes")
+@RequestMapping("/v1/classes")
 public class ReportCollectionController {
     
     private final ReportCollectionService reportCollectionService;

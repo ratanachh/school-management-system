@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * Requires ADMINISTRATOR role for viewing audit logs
  */
 @RestController
-@RequestMapping("/api/v1/audit")
+@RequestMapping("/v1/audit")
 public class AuditController {
 
     private final AuditService auditService;

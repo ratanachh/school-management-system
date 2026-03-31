@@ -16,7 +16,7 @@ import java.util.UUID;
  * Requires TEACHER role or ADMINISTRATOR role
  */
 @RestController
-@RequestMapping("/api/v1/reports")
+@RequestMapping("/v1/reports")
 public class AttendanceReportController {
 
     private final AttendanceService attendanceService;

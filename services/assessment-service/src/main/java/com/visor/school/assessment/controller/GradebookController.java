@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * Accessible by ADMINISTRATOR, TEACHER, STUDENT, and PARENT roles
  */
 @RestController
-@RequestMapping("/api/v1/gradebooks")
+@RequestMapping("/v1/gradebooks")
 public class GradebookController {
     
     private final GradebookService gradebookService;

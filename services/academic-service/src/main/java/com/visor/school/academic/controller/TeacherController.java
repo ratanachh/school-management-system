@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Requires ADMINISTRATOR role for most operations
  */
 @RestController
-@RequestMapping("/api/v1/teachers")
+@RequestMapping("/v1/teachers")
 public class TeacherController {
 
     private final TeacherService teacherService;

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * Accessible by all authenticated users
  */
 @RestController
-@RequestMapping("/api/v1/search")
+@RequestMapping("/v1/search")
 @RequiredArgsConstructor
 public class SearchController {
 

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Requires ADMINISTRATOR role or MANAGE_HOMEROOM permission for homeroom classes
  */
 @RestController
-@RequestMapping("/api/v1/classes")
+@RequestMapping("/v1/academic/classes")
 public class ClassController {
 
     private final ClassService classService;

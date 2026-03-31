@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * Requires ADMINISTRATOR role or VIEW_ALL_STUDENTS permission for most operations
  */
 @RestController
-@RequestMapping("/api/v1/students")
+@RequestMapping("/v1/students")
 public class StudentController {
 
     private final StudentService studentService;

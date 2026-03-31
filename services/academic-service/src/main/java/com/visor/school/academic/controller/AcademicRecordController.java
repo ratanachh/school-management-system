@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * Requires TEACHER role or ADMINISTRATOR role for viewing records
  */
 @RestController
-@RequestMapping("/api/v1/academic-records")
+@RequestMapping("/v1/academic-records")
 public class AcademicRecordController {
 
     private final AcademicRecordService academicRecordService;
