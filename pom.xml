@@ -23,7 +23,7 @@
         <junit.version>5.11.0</junit.version>
         <mockito.version>5.14.0</mockito.version>
         <testcontainers.version>1.19.8</testcontainers.version>
-        <flyway.version>12.2.0</flyway.version>
+
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -63,19 +63,6 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <!-- Flyway -->
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>${flyway.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-database-postgresql</artifactId>
-                <version>${flyway.version}</version>
             </dependency>
 
             <!-- Bucket4j for rate limiting -->
@@ -152,7 +139,7 @@
                 <plugin>
                     <groupId>org.flywaydb</groupId>
                     <artifactId>flyway-maven-plugin</artifactId>
-                    <version>${flyway.version}</version>
+                    <version>11.7.2</version>
                 </plugin>
             </plugins>
         </pluginManagement>
